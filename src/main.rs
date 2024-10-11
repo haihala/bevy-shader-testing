@@ -20,6 +20,7 @@ fn main() {
             MaterialPlugin::<CornerSlashMaterial>::default(),
             MaterialPlugin::<EdgeSlashMaterial>::default(),
             MaterialPlugin::<BurstMaterial>::default(),
+            MaterialPlugin::<RocksMaterial>::default(),
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, (rotate_meshes, rotate_camera, flicker_sizes))
@@ -47,6 +48,7 @@ fn setup(
     mut corner_slash_materials: ResMut<Assets<CornerSlashMaterial>>,
     mut edge_slash_materials: ResMut<Assets<EdgeSlashMaterial>>,
     mut burst_materials: ResMut<Assets<BurstMaterial>>,
+    mut rocks_materials: ResMut<Assets<RocksMaterial>>,
 ) {
     // cube
     commands.spawn((
@@ -83,6 +85,13 @@ fn setup(
             cb.spawn(MaterialMeshBundle {
                 mesh: meshes.add(Rectangle::new(1.0, 1.0)),
                 transform: Transform::from_xyz(1.0, 0.0, -2.0),
+                material: rocks_materials.add(RocksMaterial {}),
+                ..default()
+            });
+
+            cb.spawn(MaterialMeshBundle {
+                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
+                transform: Transform::from_xyz(-1.25, 0.75, -2.0),
                 material: burst_materials.add(BurstMaterial {}),
                 ..default()
             });
@@ -403,6 +412,19 @@ struct LightningMaterial {}
 impl Material for LightningMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/lightning.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct RocksMaterial {}
+
+impl Material for RocksMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/rocks.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {
