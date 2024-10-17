@@ -21,6 +21,7 @@ fn main() {
             MaterialPlugin::<EdgeSlashMaterial>::default(),
             MaterialPlugin::<BurstMaterial>::default(),
             MaterialPlugin::<RocksMaterial>::default(),
+            MaterialPlugin::<SparksMaterial>::default(),
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, (rotate_meshes, rotate_camera, flicker_sizes))
@@ -49,6 +50,7 @@ fn setup(
     mut edge_slash_materials: ResMut<Assets<EdgeSlashMaterial>>,
     mut burst_materials: ResMut<Assets<BurstMaterial>>,
     mut rocks_materials: ResMut<Assets<RocksMaterial>>,
+    mut sparks_materials: ResMut<Assets<SparksMaterial>>,
 ) {
     // cube
     commands.spawn((
@@ -85,7 +87,7 @@ fn setup(
             cb.spawn(MaterialMeshBundle {
                 mesh: meshes.add(Rectangle::new(1.0, 1.0)),
                 transform: Transform::from_xyz(1.0, 0.0, -2.0),
-                material: rocks_materials.add(RocksMaterial {}),
+                material: sparks_materials.add(SparksMaterial {}),
                 ..default()
             });
 
@@ -128,6 +130,13 @@ fn setup(
                 mesh: meshes.add(Rectangle::new(0.25, 0.25)),
                 transform: Transform::from_xyz(-1.25, -0.5, -2.0),
                 material: focal_line_materials.add(FocalLineMaterial {}),
+                ..default()
+            });
+
+            cb.spawn(MaterialMeshBundle {
+                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
+                transform: Transform::from_xyz(-1.00, 0.75, -2.0),
+                material: rocks_materials.add(RocksMaterial {}),
                 ..default()
             });
 
@@ -425,6 +434,18 @@ struct RocksMaterial {}
 impl Material for RocksMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/rocks.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct SparksMaterial {}
+
+impl Material for SparksMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/sparks.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {

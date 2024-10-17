@@ -2,91 +2,79 @@
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
 const PI = 3.14159265359;
-const cycle_duration = 3.0;
-const speed = 4.0;
+const cycle_duration = 2.0;
+const anim_duration = 0.5;
+
+const main_thickness = 0.1;
+
+const secondary_start = vec2(0.01, 0.015);
+const secondary_end = vec2(0.6, 0.9);
+const secondary_movement = vec2(0.1, 0.2);
+const secondary_thickness = 0.1;
+
+const edge = 0.03;
+const inner_color = vec3(0.0, 0.0, 0.0);
+const outer_color = vec3(1.0, 0.9, 0.1);
 
 @fragment
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
     let time = globals.time + 10000;
-    let cycle = min(1.0, speed * fract(time / cycle_duration));
-    let centered = mesh.uv - 0.5;
+    let cycle = min(1.0, cycle_duration * fract(time / cycle_duration) / anim_duration);
 
-    // Burst
-    let time_mask = clamp(1 - 40 * pow(cycle, 5.0), 0.0, 1.0);
-    let wave_mask = 1 - abs(length(centered) - 0.7 * sin(ease(cycle) * PI)) / 1.5;
-    let angle = atan2(centered.x, -centered.y);
-    let beams = pattern(3 * angle + PI / 3 - time) + pattern(5 * angle + time) + pattern(7 * angle);
-    let burst_mask = clamp(
-        (0.5 - length(centered)) * beams,
-        0.0, 1.0
-    );
-    let center_mask = clamp((1 - abs(1.3 * angle)), 0.0, 1.0);
-    let mask = clamp(time_mask * wave_mask * burst_mask * center_mask, 0.0, 1.0);
+    let a = pow(cycle + 0.3, 5.0) ;
+    let b = 1.1 - pow(1 - cycle, 5.0);
+    let t = (pow(1 - abs(0.2 - cycle), 4.0)) * main_thickness;
+    let main = diamond(vec2(a), vec2(b), t, mesh.uv);
+    let color_main = diamond(vec2(a), vec2(b), t - edge, mesh.uv);
 
-    let burst = lerp(
-        vec3(1.0, 0.0, 0.0),
-        vec3(1.0, 0.9, 0.2),
-        mask
-    );
+    var secondary = 0.0;
+    var color_secondary = 0.0;
+    for (var i = 1; i < 3; i++) {
+        // Secondaries start at max and fade out
+        let fi = f32(i) * 2.0;
+        let fiv = vec2(fi);
+        let thickness = max(0.0, (1 - 8 * pow(cycle, 2.0))) * secondary_thickness;
 
-    // Ring
-    let ring_df = pow(1 - max(abs(length(centered) - (0.4 - 5 * pow(cycle, 2.0))), 0.0), 40.0);
-    let ring_color = vec3(0.1, 0.3, 1.0);
+        let movement = cycle * secondary_movement;
 
-    let total = lerp(burst, ring_color, ring_df);
+        let start_top = movement + secondary_start * fi;
+        let start_bot = movement.yx + secondary_start.yx * fi;
 
-    return vec4(total.xyz, ring_df + mask);
-    //return vec4(burst, mask);
+        let end_top = cycle * movement + pow(secondary_end, fiv);
+        let end_bot = cycle * movement.yx + pow(secondary_end.yx, fiv);
+
+        secondary += diamond(start_top, end_top, thickness, mesh.uv);
+        secondary += diamond(start_bot, end_bot, thickness, mesh.uv);
+        color_secondary += diamond(start_top, end_top, thickness - edge, mesh.uv);
+        color_secondary += diamond(start_bot, end_bot, thickness - edge, mesh.uv);
+    }
+
+    let main_field = max(main, secondary);
+    let color_field = max(color_main, color_secondary);
+
+    let color = inner_color * color_field + outer_color * (1 - color_field);
+    return vec4(color, main_field);
 }
 
-fn pattern(in: f32) -> f32 {
-    return pow(sin(in), 8.0);
-}
 
-fn ease(in: f32) -> f32 {
-    return 1 - pow(1 - in, 5.0);
-}
+fn diamond(cp1: vec2<f32>, cp2: vec2<f32>, max_width: f32, point: vec2<f32>) -> f32 {
+    if length(cp1 - cp2) < max_width {
+        // This prevents the whole thing flashing white
+        return 0.0;
+    }
 
-fn lerp(a: vec3<f32>, b: vec3<f32>, t: f32) -> vec3<f32> {
-    return a * (1 - t) + b * t;
-}
+    // cp stands for control point
+    // https://stackoverflow.com/questions/64330618/finding-the-projection-of-a-point-onto-a-line
+    let ab = cp2 - cp1;
+    let ac = point - cp1;
+    let dab = dot(ab, ab);
+    let ad = ab * dot(ab, ac) / dab;
 
-// From https://gist.github.com/munrocket/236ed5ba7e409b8bdf1ff6eca5dcdc39
-// MIT License. © Stefan Gustavson, Munrocket
-//
-fn permute4(x: vec4f) -> vec4f { return ((x * 34. + 1.) * x) % vec4f(289.); }
-fn fade2(t: vec2f) -> vec2f { return t * t * t * (t * (t * 6. - 15.) + 10.); }
-
-fn perlinNoise2(P: vec2f) -> f32 {
-    var Pi: vec4f = floor(P.xyxy) + vec4f(0., 0., 1., 1.);
-    let Pf = fract(P.xyxy) - vec4f(0., 0., 1., 1.);
-    Pi = Pi % vec4f(289.); // To avoid truncation effects in permutation
-    let ix = Pi.xzxz;
-    let iy = Pi.yyww;
-    let fx = Pf.xzxz;
-    let fy = Pf.yyww;
-    let i = permute4(permute4(ix) + iy);
-    var gx: vec4f = 2. * fract(i * 0.0243902439) - 1.; // 1/41 = 0.024...
-    let gy = abs(gx) - 0.5;
-    let tx = floor(gx + 0.5);
-    gx = gx - tx;
-    var g00: vec2f = vec2f(gx.x, gy.x);
-    var g10: vec2f = vec2f(gx.y, gy.y);
-    var g01: vec2f = vec2f(gx.z, gy.z);
-    var g11: vec2f = vec2f(gx.w, gy.w);
-    let norm = 1.79284291400159 - 0.85373472095314 * vec4f(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11));
-    g00 = g00 * norm.x;
-    g01 = g01 * norm.y;
-    g10 = g10 * norm.z;
-    g11 = g11 * norm.w;
-    let n00 = dot(g00, vec2f(fx.x, fy.x));
-    let n10 = dot(g10, vec2f(fx.y, fy.y));
-    let n01 = dot(g01, vec2f(fx.z, fy.z));
-    let n11 = dot(g11, vec2f(fx.w, fy.w));
-    let fade_xy = fade2(Pf.xy);
-    let n_x = mix(vec2f(n00, n01), vec2f(n10, n11), vec2f(fade_xy.x));
-    let n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-    return 2.3 * n_xy;
+    let proj = cp1 + ad;
+    let norm = dot(ad, ab) / dab;
+    let threshold = 2 * (0.5 - abs(0.5 - norm)) * max_width;
+    let dist = length(proj - point);
+    return step(dist, threshold);
 }
