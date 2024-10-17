@@ -39,7 +39,7 @@ fn fragment(
     let cycle = min(1.0, speed * fract(time / cycle_duration));
     let coords = (mesh.uv - vec2(0.0, 1.0)) * vec2(1.0, -1.0);
 
-    var field = vec3(0.0);
+    var field = 0.0;
 
     for (var i = seed; i < seed + amount; i++) {
         let size_rand = rand(i, 2.345);
@@ -52,23 +52,16 @@ fn fragment(
         let front_dist = 0.5 * length(coords - front_rock);
         let back_dist = 0.5 * length(coords - (front_rock + 0.07 * norm * size_rand));
         let dist = front_dist + back_dist;
-        //let dist = length(coords - front_rock);
 
-        if field.x == 0 {
-            field.y += step(abs(dist - size), size * border);
-        }
-        field.x += step(dist, size);
+        field += step(dist, size);
     }
 
-    if field.x <= 0.01 {
+    if field <= 0.0 {
         return vec4(0.0);
     }
 
-    if field.y > 0.0 {
-        return vec4(border_color.xyz, 1.0);
-    }
-
-    return vec4(inner_color.xyz, 1.0);
+    let color = inner_color.xyz * field + border_color.xyz * (1 - field);
+    return vec4(color, 1.0);
 }
 
 fn ball(i: i32, t: f32, size_rand: f32) -> vec2f {
