@@ -75,170 +75,148 @@ fn setup(
 ) {
     // cube
     commands.spawn((
-        MaterialMeshBundle {
-            mesh: meshes.add(Sphere::default()),
-            transform: Transform::from_xyz(0.0, -1.0, 0.0),
-            material: fresnel_materials.add(FresnelMaterial { sharpness: 4.0 }),
-            ..default()
-        },
+        Mesh3d(meshes.add(Sphere::default())),
+        Transform::from_xyz(0.0, -1.0, 0.0),
+        MeshMaterial3d(fresnel_materials.add(FresnelMaterial { sharpness: 4.0 })),
         Rotate,
     ));
 
     // cube
     commands.spawn((
-        MaterialMeshBundle {
-            mesh: meshes.add(Cuboid::default()),
-            transform: Transform::from_xyz(0.0, 1.0, 0.0),
-            material: fresnel_materials.add(FresnelMaterial { sharpness: 2.0 }),
-            ..default()
-        },
+        Mesh3d(meshes.add(Cuboid::default())),
+        Transform::from_xyz(0.0, 1.0, 0.0),
+        MeshMaterial3d(fresnel_materials.add(FresnelMaterial { sharpness: 2.0 })),
         Rotate,
     ));
 
     // camera
     commands
         .spawn((
-            Camera3dBundle {
-                transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-                ..default()
-            },
-            VisibilityBundle::default(),
+            Camera3d::default(),
+            Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            Visibility::default(),
         ))
         .with_children(|cb| {
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(1.0, 1.0)),
-                transform: Transform::from_xyz(1.0, 0.0, -2.0),
-                material: smoke_bomb_materials.add(SmokeBombMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(1.0, 1.0))),
+                Transform::from_xyz(1.0, 0.0, -2.0),
+                MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.0, 0.75, -2.0),
-                material: sparks_materials.add(SparksMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.0, 0.75, -2.0),
+                MeshMaterial3d(sparks_materials.add(SparksMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.25, 0.75, -2.0),
-                material: burst_materials.add(BurstMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.75, -2.0),
+                MeshMaterial3d(burst_materials.add(BurstMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.25, 0.5, -2.0),
-                material: edge_slash_materials.add(EdgeSlashMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.5, -2.0),
+                MeshMaterial3d(edge_slash_materials.add(EdgeSlashMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.25, 0.25, -2.0),
-                material: corner_slash_materials.add(CornerSlashMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.25, -2.0),
+                MeshMaterial3d(corner_slash_materials.add(CornerSlashMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.25, 0.0, -2.0),
-                material: lightning_materials.add(LightningMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.0, -2.0),
+                MeshMaterial3d(lightning_materials.add(LightningMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.25, -0.25, -2.0),
-                material: spinner_materials.add(SpinnerMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, -0.25, -2.0),
+                MeshMaterial3d(spinner_materials.add(SpinnerMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.25, -0.5, -2.0),
-                material: focal_line_materials.add(FocalLineMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, -0.5, -2.0),
+                MeshMaterial3d(focal_line_materials.add(FocalLineMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.00, 0.75, -2.0),
-                material: rocks_materials.add(RocksMaterial {}),
-                ..default()
-            });
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.00, 0.75, -2.0),
+                MeshMaterial3d(rocks_materials.add(RocksMaterial {})),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.0, -0.5, -2.0),
-                material: ripple_ring_materials.add(RippleRingMaterial {
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.0, -0.5, -2.0),
+                MeshMaterial3d(ripple_ring_materials.add(RippleRingMaterial {
                     edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
                     base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
                     duration: 0.7,
                     ring_thickness: 0.05,
-                }),
-                ..default()
-            });
+                })),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.0, -0.25, -2.0),
-                material: line_field_materials.add(LineFieldMaterial {
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.0, -0.25, -2.0),
+                MeshMaterial3d(line_field_materials.add(LineFieldMaterial {
                     edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
                     base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
                     speed: 1.0,
                     angle: 0.0,
                     line_thickness: 0.01,
                     layer_count: 7,
-                }),
-                ..default()
-            });
+                })),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.0, 0.0, -2.0),
-                material: explosion_materials.add(HitSparkMaterial {
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.0, 0.0, -2.0),
+                MeshMaterial3d(explosion_materials.add(HitSparkMaterial {
                     edge_color: LinearRgba::rgb(1.0, 0.2, 0.05),
                     mid_color: LinearRgba::rgb(1.0, 1.0, 0.1),
                     base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
-                }),
-                ..default()
-            });
+                })),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.0, 0.25, -2.0),
-                material: block_materials.add(BlockMaterial {
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.0, 0.25, -2.0),
+                MeshMaterial3d(block_materials.add(BlockMaterial {
                     edge_color: LinearRgba::rgb(0.1, 0.2, 1.0),
                     base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
                     speed: 1.0,
-                }),
-                ..default()
-            });
+                })),
+            ));
 
-            cb.spawn(MaterialMeshBundle {
-                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
-                transform: Transform::from_xyz(-1.0, 0.5, -2.0),
-                material: clink_materials.add(ClinkMaterial {
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.0, 0.5, -2.0),
+                MeshMaterial3d(clink_materials.add(ClinkMaterial {
                     edge_color: LinearRgba::rgb(0.9, 0.1, 0.9),
                     base_color: LinearRgba::rgb(1.0, 0.5, 1.0),
                     speed: 1.2,
-                }),
-                ..default()
-            });
+                })),
+            ));
         });
 }
 
 fn rotate_meshes(mut mesh_query: Query<&mut Transform, With<Rotate>>, time: Res<Time>) {
     for mut tf in &mut mesh_query {
-        tf.rotate_y(time.delta_seconds());
-        tf.rotate_x(0.5 * time.delta_seconds());
+        tf.rotate_y(time.delta_secs());
+        tf.rotate_x(0.5 * time.delta_secs());
     }
 }
 
 fn flicker_sizes(mut mesh_query: Query<&mut Transform, With<Flicker>>, time: Res<Time>) {
     for mut tf in &mut mesh_query {
-        let mut scale = f32::sin(time.elapsed_seconds() * 15.0).abs() + 0.3;
+        let mut scale = f32::sin(time.elapsed_secs() * 15.0).abs() + 0.3;
         if scale < 1.0 {
             scale = 0.0;
         }
@@ -248,7 +226,7 @@ fn flicker_sizes(mut mesh_query: Query<&mut Transform, With<Flicker>>, time: Res
 
 fn rotate_camera(mut cam_query: Query<&mut Transform, With<Camera>>, time: Res<Time>) {
     let mut cam_tf = cam_query.single_mut();
-    let angle = time.elapsed_seconds() * 0.01;
+    let angle = time.elapsed_secs() * 0.01;
     let distance = 5.0;
     *cam_tf = Transform::from_xyz(0.0, distance * f32::sin(angle), distance * f32::cos(angle))
         .looking_at(Vec3::ZERO, Vec3::Y);
