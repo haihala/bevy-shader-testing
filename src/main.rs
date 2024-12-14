@@ -6,8 +6,8 @@ use bevy::{
 
 fn main() {
     App::new()
+        .add_plugins(DefaultPlugins)
         .add_plugins((
-            DefaultPlugins,
             MaterialPlugin::<FresnelMaterial>::default(),
             MaterialPlugin::<RippleRingMaterial>::default(),
             MaterialPlugin::<HitSparkMaterial>::default(),
@@ -22,6 +22,7 @@ fn main() {
             MaterialPlugin::<BurstMaterial>::default(),
             MaterialPlugin::<RocksMaterial>::default(),
             MaterialPlugin::<SparksMaterial>::default(),
+            MaterialPlugin::<SmokeBombMaterial>::default(),
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, (rotate_meshes, rotate_camera, flicker_sizes))
@@ -37,20 +38,40 @@ struct Flicker;
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut fresnel_materials: ResMut<Assets<FresnelMaterial>>,
-    mut ripple_ring_materials: ResMut<Assets<RippleRingMaterial>>,
-    mut explosion_materials: ResMut<Assets<HitSparkMaterial>>,
-    mut block_materials: ResMut<Assets<BlockMaterial>>,
-    mut clink_materials: ResMut<Assets<ClinkMaterial>>,
-    mut line_field_materials: ResMut<Assets<LineFieldMaterial>>,
-    mut spinner_materials: ResMut<Assets<SpinnerMaterial>>,
-    mut focal_line_materials: ResMut<Assets<FocalLineMaterial>>,
-    mut lightning_materials: ResMut<Assets<LightningMaterial>>,
-    mut corner_slash_materials: ResMut<Assets<CornerSlashMaterial>>,
-    mut edge_slash_materials: ResMut<Assets<EdgeSlashMaterial>>,
-    mut burst_materials: ResMut<Assets<BurstMaterial>>,
-    mut rocks_materials: ResMut<Assets<RocksMaterial>>,
-    mut sparks_materials: ResMut<Assets<SparksMaterial>>,
+    // This way to get around bevy system param limit
+    (
+        mut fresnel_materials,
+        mut ripple_ring_materials,
+        mut explosion_materials,
+        mut block_materials,
+        mut clink_materials,
+        mut line_field_materials,
+        mut spinner_materials,
+        mut focal_line_materials,
+        mut lightning_materials,
+        mut corner_slash_materials,
+        mut edge_slash_materials,
+        mut burst_materials,
+        mut rocks_materials,
+        mut sparks_materials,
+        mut smoke_bomb_materials,
+    ): (
+        ResMut<Assets<FresnelMaterial>>,
+        ResMut<Assets<RippleRingMaterial>>,
+        ResMut<Assets<HitSparkMaterial>>,
+        ResMut<Assets<BlockMaterial>>,
+        ResMut<Assets<ClinkMaterial>>,
+        ResMut<Assets<LineFieldMaterial>>,
+        ResMut<Assets<SpinnerMaterial>>,
+        ResMut<Assets<FocalLineMaterial>>,
+        ResMut<Assets<LightningMaterial>>,
+        ResMut<Assets<CornerSlashMaterial>>,
+        ResMut<Assets<EdgeSlashMaterial>>,
+        ResMut<Assets<BurstMaterial>>,
+        ResMut<Assets<RocksMaterial>>,
+        ResMut<Assets<SparksMaterial>>,
+        ResMut<Assets<SmokeBombMaterial>>,
+    ),
 ) {
     // cube
     commands.spawn((
@@ -87,6 +108,13 @@ fn setup(
             cb.spawn(MaterialMeshBundle {
                 mesh: meshes.add(Rectangle::new(1.0, 1.0)),
                 transform: Transform::from_xyz(1.0, 0.0, -2.0),
+                material: smoke_bomb_materials.add(SmokeBombMaterial {}),
+                ..default()
+            });
+
+            cb.spawn(MaterialMeshBundle {
+                mesh: meshes.add(Rectangle::new(0.25, 0.25)),
+                transform: Transform::from_xyz(-1.0, 0.75, -2.0),
                 material: sparks_materials.add(SparksMaterial {}),
                 ..default()
             });
@@ -434,6 +462,19 @@ struct RocksMaterial {}
 impl Material for RocksMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/rocks.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct SmokeBombMaterial {}
+
+impl Material for SmokeBombMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/smoke_bomb.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {
