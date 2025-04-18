@@ -5,7 +5,7 @@
 @group(2) @binding(1) var<uniform> edge_color: vec4<f32>;
 @group(2) @binding(2) var<uniform> speed: f32;
 
-const PI = 3.14159265359;
+#import "shaders/helpers.wgsl"::{PI}
 
 @fragment
 fn fragment(

@@ -1,9 +1,7 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-const PI = 3.14159265359;
-const offset = PI * 2 / 3;
-
+#import "shaders/helpers.wgsl"::{PI}
 
 @fragment
 fn fragment(

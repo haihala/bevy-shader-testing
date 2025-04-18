@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{
     prelude::*,
     reflect::TypePath,
@@ -6,23 +8,29 @@ use bevy::{
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
         .add_plugins((
-            MaterialPlugin::<FresnelMaterial>::default(),
-            MaterialPlugin::<RippleRingMaterial>::default(),
-            MaterialPlugin::<HitSparkMaterial>::default(),
-            MaterialPlugin::<BlockMaterial>::default(),
-            MaterialPlugin::<ClinkMaterial>::default(),
-            MaterialPlugin::<LineFieldMaterial>::default(),
-            MaterialPlugin::<SpinnerMaterial>::default(),
-            MaterialPlugin::<FocalLineMaterial>::default(),
-            MaterialPlugin::<LightningMaterial>::default(),
-            MaterialPlugin::<CornerSlashMaterial>::default(),
-            MaterialPlugin::<EdgeSlashMaterial>::default(),
-            MaterialPlugin::<BurstMaterial>::default(),
-            MaterialPlugin::<RocksMaterial>::default(),
-            MaterialPlugin::<SparksMaterial>::default(),
-            MaterialPlugin::<SmokeBombMaterial>::default(),
+            DefaultPlugins,
+            (
+                MaterialPlugin::<FresnelMaterial>::default(),
+                MaterialPlugin::<RippleRingMaterial>::default(),
+                MaterialPlugin::<HitSparkMaterial>::default(),
+                MaterialPlugin::<BlockMaterial>::default(),
+                MaterialPlugin::<ClinkMaterial>::default(),
+                MaterialPlugin::<LineFieldMaterial>::default(),
+                MaterialPlugin::<SpinnerMaterial>::default(),
+                MaterialPlugin::<FocalLineMaterial>::default(),
+                MaterialPlugin::<LightningMaterial>::default(),
+                MaterialPlugin::<CornerSlashMaterial>::default(),
+                MaterialPlugin::<EdgeSlashMaterial>::default(),
+                MaterialPlugin::<BurstMaterial>::default(),
+                MaterialPlugin::<RocksMaterial>::default(),
+                MaterialPlugin::<SparksMaterial>::default(),
+                MaterialPlugin::<SmokeBombMaterial>::default(),
+            ),
+            (
+                MaterialPlugin::<VertexTest>::default(),
+                MaterialPlugin::<RippleMaterial>::default(),
+            ),
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, (rotate_meshes, rotate_camera, flicker_sizes))
@@ -72,6 +80,10 @@ fn setup(
         ResMut<Assets<SparksMaterial>>,
         ResMut<Assets<SmokeBombMaterial>>,
     ),
+    (mut vertex_material, mut ripple_material): (
+        ResMut<Assets<VertexTest>>,
+        ResMut<Assets<RippleMaterial>>,
+    ),
 ) {
     // cube
     commands.spawn((
@@ -98,15 +110,31 @@ fn setup(
         ))
         .with_children(|cb| {
             cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(1.0, 1.0))),
-                Transform::from_xyz(1.0, 0.0, -2.0),
-                MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
+                Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
+                Transform::from_xyz(-0.75, 0.0, -2.0).with_rotation(Quat::from_euler(
+                    EulerRot::XZX,
+                    PI / 4.0,
+                    0.0,
+                    0.0,
+                )),
+                MeshMaterial3d(ripple_material.add(RippleMaterial {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-0.75, 0.25, -2.0),
+                MeshMaterial3d(vertex_material.add(VertexTest {})),
             ));
 
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, 0.75, -2.0),
+                Transform::from_xyz(-0.75, 0.75, -2.0),
                 MeshMaterial3d(sparks_materials.add(SparksMaterial {})),
+            ));
+
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-0.75, 0.5, -2.0),
+                MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
             ));
 
             cb.spawn((
@@ -147,7 +175,7 @@ fn setup(
 
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.00, 0.75, -2.0),
+                Transform::from_xyz(-1.0, 0.75, -2.0),
                 MeshMaterial3d(rocks_materials.add(RocksMaterial {})),
             ));
 
@@ -448,6 +476,22 @@ impl Material for RocksMaterial {
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct RippleMaterial {}
+
+impl Material for RippleMaterial {
+    fn vertex_shader() -> ShaderRef {
+        "shaders/ripple.wgsl".into()
+    }
+
+    fn fragment_shader() -> ShaderRef {
+        "shaders/ripple.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 struct SmokeBombMaterial {}
 
 impl Material for SmokeBombMaterial {
@@ -465,6 +509,23 @@ struct SparksMaterial {}
 impl Material for SparksMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/sparks.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct VertexTest {}
+
+impl Material for VertexTest {
+    fn vertex_shader() -> ShaderRef {
+        "shaders/vertex.wgsl".into()
+    }
+
+    fn fragment_shader() -> ShaderRef {
+        "shaders/vertex.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {

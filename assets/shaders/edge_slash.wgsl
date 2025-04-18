@@ -1,11 +1,12 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-const PI = 3.14159265359;
+#import "shaders/helpers.wgsl"::{easeOutQuint}
+
 const cycle_duration = 2.0;
 const speed = 2.0;
 
-const edge_sharpness= 2.0;
+const edge_sharpness = 2.0;
 
 const color = vec3(0.0, 1.0, 0.5);
 
@@ -21,12 +22,8 @@ fn fragment(
     let falloff = edge_falloff * time_falloff;
 
     let dist = length(mesh.uv - vec2(0.0, 0.5));
-    let wave = pow(1 - abs(dist - (ease(cycle * 0.4) * 0.15 + 0.6)), 40.0);
+    let wave = pow(1 - abs(dist - (easeOutQuint(cycle * 0.4) * 0.15 + 0.6)), 40.0);
     let field = falloff * wave;
 
     return vec4(color.xyz, field);
-}
-
-fn ease(i: f32) -> f32 {
-    return 1 - pow(1 - i, 5.0);
 }

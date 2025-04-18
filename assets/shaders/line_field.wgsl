@@ -8,9 +8,7 @@
 @group(2) @binding(4) var<uniform> line_thickness: f32;
 @group(2) @binding(5) var<uniform> layer_count: i32;
 
-const PI = 3.14159265359;
-const offset = PI * 2 / 3;
-
+#import "shaders/helpers.wgsl"::{PI}
 
 @fragment
 fn fragment(
@@ -28,7 +26,7 @@ fn fragment(
     layers *= wave;
 
     let falloff = clamp(1.0 - length(centered), 0.0, 1.0);
-    let color = lerp(clamp(layers, 0.0, 1.0), base_color, edge_color);
+    let color = mix(base_color, edge_color, clamp(layers, 0.0, 1.0));
     return vec4(color.xyz, layers * falloff);
 }
 
@@ -44,9 +42,5 @@ fn layer(time: f32, ang: f32, coords: vec2<f32>) -> f32 {
     // Masks out some lines
     let lanes = step(abs(sin((5 + floor(time) % 3) * angled + 10 * floor(time))), line_thickness);
     return stripes * lanes * roller;
-}
-
-fn lerp(t: f32, c1: vec4<f32>, c2: vec4<f32>) -> vec4<f32> {
-    return t * c1 + (1 - t) * c2;
 }
 

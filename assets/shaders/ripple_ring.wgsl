@@ -6,8 +6,7 @@
 @group(2) @binding(2) var<uniform> duration: f32;
 @group(2) @binding(3) var<uniform> ring_thickness: f32;
 
-const PI = 3.14159265359;
-const offset = PI * 2 / 3;
+#import "shaders/helpers.wgsl"::{PI, easeOutQuint}
 
 @fragment
 fn fragment(
@@ -33,15 +32,7 @@ fn fragment(
     } else {
         alpha = 0.0;
     }
-    var color = lerp(t / half_ring, edge_color, base_color);
+    var color = mix(edge_color, base_color, t / half_ring);
     color.a *= alpha;
     return color;
-}
-
-fn lerp(t: f32, c1: vec4<f32>, c2: vec4<f32>) -> vec4<f32> {
-    return t * c1 + (1 - t) * c2;
-}
-
-fn easeOutQuint(x: f32) -> f32 {
-    return 1 - pow(1 - x, 5.0);
 }

@@ -1,7 +1,7 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-const PI = 3.14159265359;
+#import "shaders/helpers.wgsl"::{PI, inverse_lerp}
 
 // Controls
 const zigzags = 3.0;
@@ -56,7 +56,7 @@ fn fragment(
         shape = dip_term + bump_term;
     }
 
-    let norm_term = ilerp(0.0, smoothing, mesh.uv.y * (1 - mesh.uv.y));
+    let norm_term = inverse_lerp(0.0, smoothing, mesh.uv.y * (1 - mesh.uv.y));
     let flash = max(0.0, 1 - cycle * 2.0);
     let wave_target = sqrt(2.0) * cycle * wave_speed;
     let diag_pos = mesh.uv.x + mesh.uv.y;
@@ -74,8 +74,4 @@ fn fragment(
     }
 
     return color;
-}
-
-fn ilerp(floor: f32, ceil: f32, val: f32) -> f32 {
-    return (val - floor) / (ceil - floor);
 }

@@ -3,7 +3,7 @@
 
 @group(2) @binding(0) var<uniform> sharpness: f32;
 
-const PI = 3.14159265359;
+#import "shaders/helpers.wgsl"::{PI}
 const offset = PI * 2 / 3;
 
 @fragment

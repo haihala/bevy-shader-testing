@@ -5,8 +5,7 @@
 @group(2) @binding(1) var<uniform> mid_color: vec4<f32>;
 @group(2) @binding(2) var<uniform> edge_color: vec4<f32>;
 
-const PI = 3.14159265359;
-const offset = PI * 2 / 3;
+#import "shaders/helpers.wgsl"::{PI}
 
 @fragment
 fn fragment(

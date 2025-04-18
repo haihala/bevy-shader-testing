@@ -1,7 +1,8 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-const PI = 3.14159265359;
+#import "shaders/helpers.wgsl"::{PI}
+
 const cycle_duration = 2.0;
 const speed = 2.0;
 

@@ -1,9 +1,7 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-const PI = 3.14159265359;
-const offset = PI * 2 / 3;
-
+#import "shaders/helpers.wgsl"::{PI}
 
 @fragment
 fn fragment(
@@ -19,10 +17,5 @@ fn fragment(
     let field = smoothstep(0.7, 1.0, flower * ring);
 
     return vec4(field);
-}
-
-
-fn lerp(t: f32, c1: vec4<f32>, c2: vec4<f32>) -> vec4<f32> {
-    return t * c1 + (1 - t) * c2;
 }
 
