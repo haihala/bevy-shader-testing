@@ -30,6 +30,7 @@ fn main() {
             (
                 MaterialPlugin::<VertexTest>::default(),
                 MaterialPlugin::<RippleMaterial>::default(),
+                MaterialPlugin::<Jackpot>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -80,9 +81,10 @@ fn setup(
         ResMut<Assets<SparksMaterial>>,
         ResMut<Assets<SmokeBombMaterial>>,
     ),
-    (mut vertex_material, mut ripple_material): (
+    (mut vertex_material, mut ripple_material, mut jackpot_material): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
+        ResMut<Assets<Jackpot>>,
     ),
 ) {
     // cube
@@ -109,6 +111,22 @@ fn setup(
             Visibility::default(),
         ))
         .with_children(|cb| {
+            // Active
+
+            // Column 3
+            let cylinder_mesh = Cylinder::new(0.125, 0.25).mesh().without_caps().build();
+            let cylinder_rotation = Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0);
+            cb.spawn((
+                Mesh3d(meshes.add(cylinder_mesh.clone())),
+                Transform::from_xyz(-0.75, -0.25, -2.0).with_rotation(cylinder_rotation),
+                MeshMaterial3d(jackpot_material.add(Jackpot {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(cylinder_mesh.with_inverted_winding().unwrap())),
+                Transform::from_xyz(-0.75, -0.25, -2.0).with_rotation(cylinder_rotation),
+                MeshMaterial3d(jackpot_material.add(Jackpot {})),
+            ));
+
             cb.spawn((
                 Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
                 Transform::from_xyz(-0.75, 0.0, -2.0).with_rotation(Quat::from_euler(
@@ -124,61 +142,23 @@ fn setup(
                 Transform::from_xyz(-0.75, 0.25, -2.0),
                 MeshMaterial3d(vertex_material.add(VertexTest {})),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-0.75, 0.75, -2.0),
                 MeshMaterial3d(sparks_materials.add(SparksMaterial {})),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-0.75, 0.5, -2.0),
                 MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
             ));
 
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.75, -2.0),
-                MeshMaterial3d(burst_materials.add(BurstMaterial {})),
-            ));
-
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.5, -2.0),
-                MeshMaterial3d(edge_slash_materials.add(EdgeSlashMaterial {})),
-            ));
-
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.25, -2.0),
-                MeshMaterial3d(corner_slash_materials.add(CornerSlashMaterial {})),
-            ));
-
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.0, -2.0),
-                MeshMaterial3d(lightning_materials.add(LightningMaterial {})),
-            ));
-
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, -0.25, -2.0),
-                MeshMaterial3d(spinner_materials.add(SpinnerMaterial {})),
-            ));
-
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, -0.5, -2.0),
-                MeshMaterial3d(focal_line_materials.add(FocalLineMaterial {})),
-            ));
-
+            // Column 2
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-1.0, 0.75, -2.0),
                 MeshMaterial3d(rocks_materials.add(RocksMaterial {})),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-1.0, -0.5, -2.0),
@@ -189,7 +169,6 @@ fn setup(
                     ring_thickness: 0.05,
                 })),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-1.0, -0.25, -2.0),
@@ -202,7 +181,6 @@ fn setup(
                     layer_count: 7,
                 })),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-1.0, 0.0, -2.0),
@@ -212,7 +190,6 @@ fn setup(
                     base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
                 })),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-1.0, 0.25, -2.0),
@@ -222,7 +199,6 @@ fn setup(
                     speed: 1.0,
                 })),
             ));
-
             cb.spawn((
                 Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
                 Transform::from_xyz(-1.0, 0.5, -2.0),
@@ -231,6 +207,38 @@ fn setup(
                     base_color: LinearRgba::rgb(1.0, 0.5, 1.0),
                     speed: 1.2,
                 })),
+            ));
+
+            // Column 1
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.75, -2.0),
+                MeshMaterial3d(burst_materials.add(BurstMaterial {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.5, -2.0),
+                MeshMaterial3d(edge_slash_materials.add(EdgeSlashMaterial {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.25, -2.0),
+                MeshMaterial3d(corner_slash_materials.add(CornerSlashMaterial {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, 0.0, -2.0),
+                MeshMaterial3d(lightning_materials.add(LightningMaterial {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, -0.25, -2.0),
+                MeshMaterial3d(spinner_materials.add(SpinnerMaterial {})),
+            ));
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-1.25, -0.5, -2.0),
+                MeshMaterial3d(focal_line_materials.add(FocalLineMaterial {})),
             ));
         });
 }
@@ -468,6 +476,23 @@ struct RocksMaterial {}
 impl Material for RocksMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/rocks.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct Jackpot {}
+
+impl Material for Jackpot {
+    fn vertex_shader() -> ShaderRef {
+        "shaders/jackpot.wgsl".into()
+    }
+
+    fn fragment_shader() -> ShaderRef {
+        "shaders/jackpot.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {

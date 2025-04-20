@@ -1,7 +1,14 @@
 const PI = 3.14159265359;
+const TAU = PI*2.0;
 
 fn inverse_lerp(floor: f32, ceil: f32, val: f32) -> f32 {
     return (val - floor) / (ceil - floor);
+}
+
+// val assumed to be in range [curr_a, curr_b], wanted to be in range [new_a, new_b]
+fn remap(val: f32, curr_a: f32, curr_b: f32, new_a: f32, new_b: f32) -> f32 {
+    let norm = inverse_lerp(curr_a, curr_b, val);
+    return norm * (new_b - new_a) + new_a;
 }
 
 // Easing functions from https://easings.net
@@ -198,3 +205,8 @@ fn easeInOutBounce(x: f32) -> f32{
         return (1.0 + easeOutBounce(2.0 * x - 1.0)) / 2.0;
     }
 }
+
+// From https://gist.github.com/munrocket/236ed5ba7e409b8bdf1ff6eca5dcdc39
+// On generating random numbers, with help of y= [(a+x)sin(bx)] mod 1", W.J.J. Rey, 22nd European Meeting of Statisticians 1998
+fn rand11(n: f32) -> f32 { return fract(sin(n) * 43758.5453123); }
+fn rand22(n: vec2f) -> f32 { return fract(sin(dot(n, vec2f(12.9898, 4.1414))) * 43758.5453); }
