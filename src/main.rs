@@ -121,11 +121,6 @@ fn setup(
                 Transform::from_xyz(-0.75, -0.25, -2.0).with_rotation(cylinder_rotation),
                 MeshMaterial3d(jackpot_material.add(Jackpot {})),
             ));
-            cb.spawn((
-                Mesh3d(meshes.add(cylinder_mesh.with_inverted_winding().unwrap())),
-                Transform::from_xyz(-0.75, -0.25, -2.0).with_rotation(cylinder_rotation),
-                MeshMaterial3d(jackpot_material.add(Jackpot {})),
-            ));
 
             cb.spawn((
                 Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
@@ -497,6 +492,16 @@ impl Material for Jackpot {
 
     fn alpha_mode(&self) -> AlphaMode {
         AlphaMode::Blend
+    }
+
+    fn specialize(
+        _pipeline: &bevy::pbr::MaterialPipeline<Self>,
+        descriptor: &mut bevy::render::render_resource::RenderPipelineDescriptor,
+        _layout: &bevy::render::mesh::MeshVertexBufferLayoutRef,
+        _key: bevy::pbr::MaterialPipelineKey<Self>,
+    ) -> Result<(), bevy::render::render_resource::SpecializedMeshPipelineError> {
+        descriptor.primitive.cull_mode = None;
+        Ok(())
     }
 }
 
