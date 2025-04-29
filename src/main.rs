@@ -31,6 +31,7 @@ fn main() {
                 MaterialPlugin::<VertexTest>::default(),
                 MaterialPlugin::<RippleMaterial>::default(),
                 MaterialPlugin::<Jackpot>::default(),
+                MaterialPlugin::<FireMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -81,10 +82,11 @@ fn setup(
         ResMut<Assets<SparksMaterial>>,
         ResMut<Assets<SmokeBombMaterial>>,
     ),
-    (mut vertex_material, mut ripple_material, mut jackpot_material): (
+    (mut vertex_material, mut ripple_material, mut jackpot_material, mut fire_material): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
         ResMut<Assets<Jackpot>>,
+        ResMut<Assets<FireMaterial>>,
     ),
 ) {
     // cube
@@ -114,6 +116,11 @@ fn setup(
             // Active
 
             // Column 3
+            cb.spawn((
+                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+                Transform::from_xyz(-0.75, -0.5, -2.0),
+                MeshMaterial3d(fire_material.add(FireMaterial {})),
+            ));
             let cylinder_mesh = Cylinder::new(0.125, 0.25).mesh().without_caps().build();
             let cylinder_rotation = Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0);
             cb.spawn((
@@ -515,6 +522,18 @@ impl Material for RippleMaterial {
 
     fn fragment_shader() -> ShaderRef {
         "shaders/ripple.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct FireMaterial {}
+
+impl Material for FireMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/fire.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {
