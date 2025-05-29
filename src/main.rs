@@ -1,6 +1,9 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::{
+    input::{keyboard::KeyboardInput, ButtonState},
+    prelude::*,
+};
 
 mod materials;
 use materials::*;
@@ -34,15 +37,15 @@ fn main() {
             ),
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, (rotate_meshes, rotate_camera, flicker_sizes))
+        .add_systems(Update, (rotate_meshes, update_selection))
         .run();
 }
 
-#[derive(Debug, Component)]
-struct Rotate;
+#[derive(Debug, Resource)]
+struct Selected(usize);
 
 #[derive(Debug, Component)]
-struct Flicker;
+struct Rotate;
 
 fn setup(
     mut commands: Commands,
@@ -88,160 +91,122 @@ fn setup(
         ResMut<Assets<FireMaterial>>,
     ),
 ) {
-    // cube
+    commands.insert_resource(Selected(0));
     commands.spawn((
-        Mesh3d(meshes.add(Sphere::default())),
-        Transform::from_xyz(0.0, -1.0, 0.0),
-        MeshMaterial3d(fresnel_materials.add(FresnelMaterial { sharpness: 4.0 })),
-        Rotate,
+        Camera3d::default(),
+        Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
+        Visibility::default(),
     ));
 
-    // cube
     commands.spawn((
-        Mesh3d(meshes.add(Cuboid::default())),
-        Transform::from_xyz(0.0, 1.0, 0.0),
+        Mesh3d(meshes.add(Cuboid::from_length(1.0 / 8.0))),
         MeshMaterial3d(fresnel_materials.add(FresnelMaterial { sharpness: 2.0 })),
         Rotate,
     ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(fire_material.add(FireMaterial {})),
+    ));
 
-    // camera
-    commands
-        .spawn((
-            Camera3d::default(),
-            Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            Visibility::default(),
-        ))
-        .with_children(|cb| {
-            // Active
+    let cylinder_mesh = Cylinder::new(0.125, 0.25).mesh().without_caps().build();
+    let cylinder_rotation = Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0);
+    commands.spawn((
+        Mesh3d(meshes.add(cylinder_mesh.clone())),
+        Transform::from_rotation(cylinder_rotation),
+        MeshMaterial3d(jackpot_material.add(Jackpot {})),
+    ));
 
-            // Column 3
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-0.75, -0.5, -2.0),
-                MeshMaterial3d(fire_material.add(FireMaterial {})),
-            ));
-            let cylinder_mesh = Cylinder::new(0.125, 0.25).mesh().without_caps().build();
-            let cylinder_rotation = Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0);
-            cb.spawn((
-                Mesh3d(meshes.add(cylinder_mesh.clone())),
-                Transform::from_xyz(-0.75, -0.25, -2.0).with_rotation(cylinder_rotation),
-                MeshMaterial3d(jackpot_material.add(Jackpot {})),
-            ));
+    commands.spawn((
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
+        Transform::from_rotation(Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0)),
+        MeshMaterial3d(ripple_material.add(RippleMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(vertex_material.add(VertexTest {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(sparks_materials.add(SparksMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
+    ));
 
-            cb.spawn((
-                Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
-                Transform::from_xyz(-0.75, 0.0, -2.0).with_rotation(Quat::from_euler(
-                    EulerRot::XZX,
-                    PI / 4.0,
-                    0.0,
-                    0.0,
-                )),
-                MeshMaterial3d(ripple_material.add(RippleMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-0.75, 0.25, -2.0),
-                MeshMaterial3d(vertex_material.add(VertexTest {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-0.75, 0.75, -2.0),
-                MeshMaterial3d(sparks_materials.add(SparksMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-0.75, 0.5, -2.0),
-                MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
-            ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(rocks_materials.add(RocksMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(ripple_ring_materials.add(RippleRingMaterial {
+            edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
+            base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
+            duration: 0.7,
+            ring_thickness: 0.05,
+        })),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(line_field_materials.add(LineFieldMaterial {
+            edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
+            base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
+            speed: 1.0,
+            angle: 0.0,
+            line_thickness: 0.01,
+            layer_count: 7,
+        })),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(explosion_materials.add(HitSparkMaterial {
+            edge_color: LinearRgba::rgb(1.0, 0.2, 0.05),
+            mid_color: LinearRgba::rgb(1.0, 1.0, 0.1),
+            base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
+        })),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(block_materials.add(BlockMaterial {
+            edge_color: LinearRgba::rgb(0.1, 0.2, 1.0),
+            base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
+            speed: 1.0,
+        })),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(clink_materials.add(ClinkMaterial {
+            edge_color: LinearRgba::rgb(0.9, 0.1, 0.9),
+            base_color: LinearRgba::rgb(1.0, 0.5, 1.0),
+            speed: 1.2,
+        })),
+    ));
 
-            // Column 2
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, 0.75, -2.0),
-                MeshMaterial3d(rocks_materials.add(RocksMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, -0.5, -2.0),
-                MeshMaterial3d(ripple_ring_materials.add(RippleRingMaterial {
-                    edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
-                    base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
-                    duration: 0.7,
-                    ring_thickness: 0.05,
-                })),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, -0.25, -2.0),
-                MeshMaterial3d(line_field_materials.add(LineFieldMaterial {
-                    edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
-                    base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
-                    speed: 1.0,
-                    angle: 0.0,
-                    line_thickness: 0.01,
-                    layer_count: 7,
-                })),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, 0.0, -2.0),
-                MeshMaterial3d(explosion_materials.add(HitSparkMaterial {
-                    edge_color: LinearRgba::rgb(1.0, 0.2, 0.05),
-                    mid_color: LinearRgba::rgb(1.0, 1.0, 0.1),
-                    base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
-                })),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, 0.25, -2.0),
-                MeshMaterial3d(block_materials.add(BlockMaterial {
-                    edge_color: LinearRgba::rgb(0.1, 0.2, 1.0),
-                    base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
-                    speed: 1.0,
-                })),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.0, 0.5, -2.0),
-                MeshMaterial3d(clink_materials.add(ClinkMaterial {
-                    edge_color: LinearRgba::rgb(0.9, 0.1, 0.9),
-                    base_color: LinearRgba::rgb(1.0, 0.5, 1.0),
-                    speed: 1.2,
-                })),
-            ));
-
-            // Column 1
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.75, -2.0),
-                MeshMaterial3d(burst_materials.add(BurstMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.5, -2.0),
-                MeshMaterial3d(edge_slash_materials.add(EdgeSlashMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.25, -2.0),
-                MeshMaterial3d(corner_slash_materials.add(CornerSlashMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, 0.0, -2.0),
-                MeshMaterial3d(lightning_materials.add(LightningMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, -0.25, -2.0),
-                MeshMaterial3d(spinner_materials.add(SpinnerMaterial {})),
-            ));
-            cb.spawn((
-                Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-                Transform::from_xyz(-1.25, -0.5, -2.0),
-                MeshMaterial3d(focal_line_materials.add(FocalLineMaterial {})),
-            ));
-        });
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(burst_materials.add(BurstMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(edge_slash_materials.add(EdgeSlashMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(corner_slash_materials.add(CornerSlashMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(lightning_materials.add(LightningMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(spinner_materials.add(SpinnerMaterial {})),
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(focal_line_materials.add(FocalLineMaterial {})),
+    ));
 }
 
 fn rotate_meshes(mut mesh_query: Query<&mut Transform, With<Rotate>>, time: Res<Time>) {
@@ -251,20 +216,43 @@ fn rotate_meshes(mut mesh_query: Query<&mut Transform, With<Rotate>>, time: Res<
     }
 }
 
-fn flicker_sizes(mut mesh_query: Query<&mut Transform, With<Flicker>>, time: Res<Time>) {
-    for mut tf in &mut mesh_query {
-        let mut scale = f32::sin(time.elapsed_secs() * 15.0).abs() + 0.3;
-        if scale < 1.0 {
-            scale = 0.0;
-        }
-        tf.scale = Vec3::ONE * scale;
-    }
-}
+const ROW_SIZE: usize = 8;
+const SQUARE_EDGE: f32 = 0.25;
+const POS0: Vec3 = Vec3::new(-2.0, 1.0, 0.0);
 
-fn rotate_camera(mut cam_query: Query<&mut Transform, With<Camera>>, time: Res<Time>) {
-    let mut cam_tf = cam_query.single_mut();
-    let angle = time.elapsed_secs() * 0.01;
-    let distance = 5.0;
-    *cam_tf = Transform::from_xyz(0.0, distance * f32::sin(angle), distance * f32::cos(angle))
-        .looking_at(Vec3::ZERO, Vec3::Y);
+fn update_selection(
+    mut keyboard_input_events: EventReader<KeyboardInput>,
+    mut selection: ResMut<Selected>,
+    mut meshes: Query<&mut Transform, With<Mesh3d>>,
+) {
+    let selectables = meshes.iter().count();
+    let Selected(selected_index) = *selection;
+    for event in keyboard_input_events.read() {
+        if event.repeat || event.state == ButtonState::Released {
+            continue;
+        }
+
+        match event.key_code {
+            KeyCode::KeyD if selected_index < (selectables - 1) => selection.0 += 1,
+            KeyCode::KeyD => selection.0 = 0,
+            KeyCode::KeyA if selected_index == 0 => selection.0 = selectables - 1,
+            KeyCode::KeyA => selection.0 -= 1,
+            _ => {}
+        }
+    }
+
+    let Selected(new_selection) = *selection;
+
+    for (index, mut tf) in meshes.iter_mut().enumerate() {
+        if index == new_selection {
+            tf.translation = Vec3::new(1.0, 0.0, 0.0);
+            tf.scale = Vec3::splat(6.0);
+            continue;
+        }
+
+        let row = (index / ROW_SIZE) as f32;
+        let col = (index % ROW_SIZE) as f32;
+        tf.translation = POS0 + SQUARE_EDGE * Vec3::new(col, -row, 0.0);
+        tf.scale = Vec3::splat(1.0);
+    }
 }
