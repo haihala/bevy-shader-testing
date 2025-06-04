@@ -254,6 +254,23 @@ fn update_selection(
             KeyCode::KeyD => selection.0 = 0,
             KeyCode::KeyA if selected_index == 0 => selection.0 = selectables - 1,
             KeyCode::KeyA => selection.0 -= 1,
+            KeyCode::KeyW if selected_index < ROW_SIZE => {
+                // Last item or same column on last row (wrap
+                let rows = selectables / ROW_SIZE;
+                let last_row_first_index = rows * ROW_SIZE;
+                let selected_col = selected_index % ROW_SIZE;
+                let same_col_last_row = last_row_first_index + selected_col;
+                if same_col_last_row < selectables {
+                    selection.0 = same_col_last_row;
+                } else {
+                    selection.0 = same_col_last_row - ROW_SIZE;
+                }
+            }
+            KeyCode::KeyW => selection.0 -= ROW_SIZE,
+            KeyCode::KeyS if selected_index > (selectables - ROW_SIZE - 1) => {
+                selection.0 = selected_index % ROW_SIZE
+            }
+            KeyCode::KeyS => selection.0 += ROW_SIZE,
             _ => {}
         }
     }
