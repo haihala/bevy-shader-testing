@@ -47,11 +47,15 @@ struct Selected(usize);
 #[derive(Debug, Component)]
 struct Rotate;
 
+#[derive(Debug, Component)]
+struct Blank;
+
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     // This way to get around bevy system param limit
     (
+        mut standard_materials,
         mut fresnel_materials,
         mut ripple_ring_materials,
         mut explosion_materials,
@@ -66,8 +70,8 @@ fn setup(
         mut burst_materials,
         mut rocks_materials,
         mut sparks_materials,
-        mut smoke_bomb_materials,
     ): (
+        ResMut<Assets<StandardMaterial>>,
         ResMut<Assets<FresnelMaterial>>,
         ResMut<Assets<RippleRingMaterial>>,
         ResMut<Assets<HitSparkMaterial>>,
@@ -82,13 +86,19 @@ fn setup(
         ResMut<Assets<BurstMaterial>>,
         ResMut<Assets<RocksMaterial>>,
         ResMut<Assets<SparksMaterial>>,
-        ResMut<Assets<SmokeBombMaterial>>,
     ),
-    (mut vertex_material, mut ripple_material, mut jackpot_material, mut fire_material): (
+    (
+        mut vertex_material,
+        mut ripple_material,
+        mut jackpot_material,
+        mut fire_material,
+        mut smoke_bomb_materials,
+    ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
         ResMut<Assets<Jackpot>>,
         ResMut<Assets<FireMaterial>>,
+        ResMut<Assets<SmokeBombMaterial>>,
     ),
 ) {
     commands.insert_resource(Selected(0));
@@ -207,6 +217,12 @@ fn setup(
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(focal_line_materials.add(FocalLineMaterial {})),
     ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(standard_materials.add(StandardMaterial::default())),
+        Blank,
+    ));
 }
 
 fn rotate_meshes(mut mesh_query: Query<&mut Transform, With<Rotate>>, time: Res<Time>) {
@@ -223,7 +239,8 @@ const POS0: Vec3 = Vec3::new(-2.0, 1.0, 0.0);
 fn update_selection(
     mut keyboard_input_events: EventReader<KeyboardInput>,
     mut selection: ResMut<Selected>,
-    mut meshes: Query<&mut Transform, With<Mesh3d>>,
+    mut meshes: Query<&mut Transform, (With<Mesh3d>, Without<Blank>)>,
+    mut blanks: Query<&mut Transform, With<Blank>>,
 ) {
     let selectables = meshes.iter().count();
     let Selected(selected_index) = *selection;
@@ -244,15 +261,19 @@ fn update_selection(
     let Selected(new_selection) = *selection;
 
     for (index, mut tf) in meshes.iter_mut().enumerate() {
+        let row = (index / ROW_SIZE) as f32;
+        let col = (index % ROW_SIZE) as f32;
+        let pos = POS0 + SQUARE_EDGE * Vec3::new(col, -row, 0.0);
+
         if index == new_selection {
             tf.translation = Vec3::new(1.0, 0.0, 0.0);
             tf.scale = Vec3::splat(6.0);
-            continue;
-        }
 
-        let row = (index / ROW_SIZE) as f32;
-        let col = (index % ROW_SIZE) as f32;
-        tf.translation = POS0 + SQUARE_EDGE * Vec3::new(col, -row, 0.0);
-        tf.scale = Vec3::splat(1.0);
+            let mut blank_tf = blanks.single_mut().unwrap();
+            blank_tf.translation = pos;
+        } else {
+            tf.translation = pos;
+            tf.scale = Vec3::splat(1.0);
+        }
     }
 }
