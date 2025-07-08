@@ -34,6 +34,7 @@ fn main() {
                 MaterialPlugin::<RippleMaterial>::default(),
                 MaterialPlugin::<Jackpot>::default(),
                 MaterialPlugin::<FireMaterial>::default(),
+                MaterialPlugin::<MultiRippleRingMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -92,13 +93,15 @@ fn setup(
         mut ripple_material,
         mut jackpot_material,
         mut fire_material,
-        mut smoke_bomb_materials,
+        mut smoke_bomb_material,
+        mut multi_ripple_ring_material,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
         ResMut<Assets<Jackpot>>,
         ResMut<Assets<FireMaterial>>,
         ResMut<Assets<SmokeBombMaterial>>,
+        ResMut<Assets<MultiRippleRingMaterial>>,
     ),
 ) {
     commands.insert_resource(Selected(0));
@@ -106,6 +109,14 @@ fn setup(
         Camera3d::default(),
         Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
         Visibility::default(),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(multi_ripple_ring_material.add(MultiRippleRingMaterial {
+            edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
+            base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
+        })),
     ));
 
     commands.spawn((
@@ -141,7 +152,7 @@ fn setup(
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
+        MeshMaterial3d(smoke_bomb_material.add(SmokeBombMaterial {})),
     ));
 
     commands.spawn((

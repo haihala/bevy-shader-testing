@@ -47,6 +47,24 @@ impl Material for LineFieldMaterial {
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct MultiRippleRingMaterial {
+    #[uniform(0)]
+    pub base_color: LinearRgba,
+    #[uniform(1)]
+    pub edge_color: LinearRgba,
+}
+
+impl Material for MultiRippleRingMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/multi_ripple_ring.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct RippleRingMaterial {
     #[uniform(0)]
     pub base_color: LinearRgba,
