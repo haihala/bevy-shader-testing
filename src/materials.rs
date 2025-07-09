@@ -1,7 +1,10 @@
 use bevy::{
     prelude::*,
     reflect::TypePath,
-    render::render_resource::{AsBindGroup, ShaderRef},
+    render::{
+        render_resource::{AsBindGroup, ShaderRef},
+        storage::ShaderStorageBuffer,
+    },
 };
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -327,6 +330,22 @@ impl Material for VertexTest {
 
     fn fragment_shader() -> ShaderRef {
         "shaders/vertex.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct BezierMaterial {
+    #[storage(0, read_only)]
+    pub control_points: Handle<ShaderStorageBuffer>,
+}
+
+impl Material for BezierMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/bezier.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {

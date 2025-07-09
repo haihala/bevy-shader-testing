@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use bevy::{
     input::{keyboard::KeyboardInput, ButtonState},
     prelude::*,
+    render::storage::ShaderStorageBuffer,
 };
 
 mod materials;
@@ -35,6 +36,7 @@ fn main() {
                 MaterialPlugin::<Jackpot>::default(),
                 MaterialPlugin::<FireMaterial>::default(),
                 MaterialPlugin::<MultiRippleRingMaterial>::default(),
+                MaterialPlugin::<BezierMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -95,6 +97,7 @@ fn setup(
         mut fire_material,
         mut smoke_bomb_material,
         mut multi_ripple_ring_material,
+        mut bezier_material,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -102,7 +105,9 @@ fn setup(
         ResMut<Assets<FireMaterial>>,
         ResMut<Assets<SmokeBombMaterial>>,
         ResMut<Assets<MultiRippleRingMaterial>>,
+        ResMut<Assets<BezierMaterial>>,
     ),
+    mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
 ) {
     commands.insert_resource(Selected(0));
     commands.spawn((
@@ -111,6 +116,25 @@ fn setup(
         Visibility::default(),
     ));
 
+    // Even though we don't use the fourth dimension, Bevy wants them as 4d
+    let bezier_control_points: Vec<[f32; 4]> = vec![
+        // Set 1
+        [-0.9, -0.9, 2.0, 0.0],
+        [1.0, 1.0, 10.0, 0.0],
+        [-2.0, 1.5, 10.0, 0.0],
+        [-0.2, -0.2, 5.0, 0.0],
+        // Set 2 (first anchor is assumed to be the last point of previous curve)
+        // Think of it as auto-continuity
+        [1.6, -1.9, 10.0, 0.0],
+        [-3.0, 0.2, 10.0, 0.0],
+        [0.9, 0.0, 2.0, 0.0],
+    ];
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(bezier_material.add(BezierMaterial {
+            control_points: buffers.add(ShaderStorageBuffer::from(bezier_control_points)),
+        })),
+    ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(multi_ripple_ring_material.add(MultiRippleRingMaterial {
