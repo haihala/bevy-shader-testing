@@ -341,6 +341,9 @@ impl Material for VertexTest {
 pub struct BezierMaterial {
     #[storage(0, read_only)]
     pub control_points: Handle<ShaderStorageBuffer>,
+    #[texture(2)]
+    #[sampler(1)]
+    pub texture: Option<Handle<Image>>,
 }
 
 impl Material for BezierMaterial {

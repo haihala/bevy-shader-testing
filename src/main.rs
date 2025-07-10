@@ -108,6 +108,7 @@ fn setup(
         ResMut<Assets<BezierMaterial>>,
     ),
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
+    asset_server: Res<AssetServer>,
 ) {
     commands.insert_resource(Selected(0));
     commands.spawn((
@@ -133,6 +134,7 @@ fn setup(
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(bezier_material.add(BezierMaterial {
             control_points: buffers.add(ShaderStorageBuffer::from(bezier_control_points)),
+            texture: Some(asset_server.load("pictures/smiley.png")),
         })),
     ));
     commands.spawn((

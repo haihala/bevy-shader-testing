@@ -10,6 +10,8 @@ const speed = 1.0;
 
 // Z controls relative thickness
 @group(2) @binding(0) var<storage> control_points: array<vec3f>;
+@group(2) @binding(2) var imageTexture: texture_2d<f32>;
+@group(2) @binding(1) var imageSampler: sampler;
 
 const sections_per_curve_per_unit: u32 = 40;
 const left_color: vec4f = vec4(0.1, 0.1, 1.0, 1.0);
@@ -19,8 +21,8 @@ const right_color: vec4f = vec4(1.0, 0.1, 0.1, 1.0);
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
-    let time_mode = 2;
-    let texture_mode = 0;
+    let time_mode = 0;
+    let texture_mode = 5;
 
     var time: f32 = 0;
     switch time_mode {
@@ -70,6 +72,9 @@ fn fragment(
         case 4: {
             return uv_vis(curve.uv);
         }
+        case 5: {
+            return image(curve.uv);
+        }
 
         default: {
             return vec4(1.0);
@@ -110,6 +115,9 @@ fn uv_vis(uv: vec2f) -> vec4f {
     return vec4(uv.xy, 0.0, 1.0);
 }
 
+fn image(uv: vec2f) -> vec4f {
+    return textureSample(imageTexture, imageSampler, uv);
+}
 
 struct CurveHit {
     uv: vec2f,
