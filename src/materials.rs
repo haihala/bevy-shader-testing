@@ -355,3 +355,19 @@ impl Material for BezierMaterial {
         AlphaMode::Blend
     }
 }
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct BezierSwooshMaterial {
+    #[storage(0, read_only)]
+    pub control_points: Handle<ShaderStorageBuffer>,
+}
+
+impl Material for BezierSwooshMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/bezier-swoosh.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}

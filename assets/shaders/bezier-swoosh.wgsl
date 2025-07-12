@@ -1,14 +1,18 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-#import "shaders/helpers.wgsl"::{PI};
+#import "shaders/helpers.wgsl"::{PI, easeInQuint};
 
-const total_duration = 3.0;
+const cycle_duration = 1.0;
+const cycle_cooldown = 1.0;
+const total_duration = cycle_duration + cycle_cooldown;
 
 // Z controls relative thickness
 @group(2) @binding(0) var<storage> control_points: array<vec3f>;
-@group(2) @binding(2) var imageTexture: texture_2d<f32>;
-@group(2) @binding(1) var imageSampler: sampler;
+
+const midline_color = vec4(0.165, 0.133, 0.988, 1.0);
+const stripe_primary_color = vec4(0.892, 0.624, 1.0, 1.0);
+const stripe_secondary_color = vec4(0.9, 0.624, 0.624, 1.0);
 
 const sections_per_curve_per_unit: u32 = 40;
 
@@ -16,101 +20,72 @@ const sections_per_curve_per_unit: u32 = 40;
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
-    let time_mode = 0;  // Debugging purposes
+    let time_mode = 0;
+
     var time: f32 = 0;
+    let real_time = globals.time + 10000;
     switch time_mode {
         case 1: {
-            time = 10000.68;         // Tight bend right
-        }
-        case 2: {
-            time = 9999.8;          // Tight bend left
-        }
-        case 3: {
-            time = 10001.983;       // End
-        }
-        case 4: {
-            time = 10001.7;         // Final straight
+            time = 10001.11;         // Tight bend right
         }
         default: {
-            time = globals.time + 10000;
+            time = real_time;
         }
     }
-    let cycle = min(1.0, fract(time / total_duration));
+
+    let real_cycle = min(1.0, fract(real_time / cycle_duration) * total_duration);
+    let cycle = min(1.0, fract(time / cycle_duration) * total_duration);
 
     let coord = (mesh.uv - 0.5) * vec2(2.0, -2.0);
     let curve = calc_curve(
         coord, 
-        // 0.0,1.0,
         cycle,
-        0.1,
+        0.3,
     );
 
     if !curve.on_curve {
         return vec4(0.0);
     }
 
-    let texture_mode = i32(floor(time / total_duration) % 6);
-    switch texture_mode {
-        case 0: {
-            return chess(curve.uv);
-        }
-        case 1: {
-            return ball(curve.uv);
-        }
-        case 2: {
-            return hue_sway(curve.uv);
-        }
-        case 3: {
-            return distance_vis(curve.dist);
-        }
-        case 4: {
-            return uv_vis(curve.uv);
-        }
-        case 5: {
-            return image(curve.uv);
-        }
+    return swoosh(curve.uv, real_cycle);
+}
 
-        default: {
-            return vec4(1.0);
-        }
+fn swoosh(uv: vec2f, t: f32) -> vec4f {
+    let coord = (uv-0.5)*2;
+
+    let edge_mask = 1-easeInQuint(abs(coord.x));
+
+    let corner_fade_x = 1-cos(coord.x * PI / 2.0);
+    let corner_fade_y = abs(coord.y);
+    let corner_mask = 1-(corner_fade_x*corner_fade_y);
+
+    var stripes = 0.0;
+    let layers = 3;
+    let layer_offset = PI/f32(layers);
+    let base_frequency = 0.2;
+    let frequency_power_base = 3.0;
+
+    for (var i = 1; i <= layers; i++) {
+        let l = f32(i);
+
+        let base_freq = layer_offset * l;
+        let main_freq = abs(coord.x) * base_frequency * pow(frequency_power_base, l);
+        let t_influence = -t*PI; // Different sign than main freq -> waves go mostly outwards
+        let secondary = sin(t_influence) * coord.x * base_frequency * pow(frequency_power_base, l) / 3.0;
+        let output = abs(sin(base_freq + main_freq + t_influence + secondary));
+        stripes += output / f32(layers);
     }
-}
+    let wave_y = cos(abs(coord.y) * PI/2.0);
+    let wave_mask = (1-stripes) * wave_y;
 
-fn chess(uv: vec2f) -> vec4f {
-    let grid = vec2i(floor(uv * vec2(4.0, 12.0)));
-    let even = (grid.x + grid.y) % 2 == 0;
-    if even {
-        return vec4(1.0);
-    } else {
-        return vec4(0.0, 0.0, 0.0, 1.0);
-    }
-}
+    let mask = edge_mask * corner_mask * wave_mask;
 
-fn ball(uv: vec2f) -> vec4f {
-    let dist = length(2*(uv - 0.5));
-    if dist < 1.0{
-        return vec4(1.0);
-    } else {
-        return vec4(0.0);
-    }
-}
+    let throughline_weight = easeInQuint(1-abs(coord.x));
+    let base_color_mixer = 0.5 + 0.5*sin(4*coord.x*PI);
+    let base_color = mix(stripe_primary_color, stripe_secondary_color, base_color_mixer);
+    let color = mix(base_color, midline_color , throughline_weight);
 
-fn hue_sway(uv: vec2f) -> vec4f {
-    let left = vec4(1.0);
-    let right = vec4(0.0);
-    return mix(left, right, uv.x);
-}
-
-fn distance_vis(dist: f32) -> vec4f {
-    return vec4(dist);
-}
-
-fn uv_vis(uv: vec2f) -> vec4f {
-    return vec4(uv.xy, 0.0, 1.0);
-}
-
-fn image(uv: vec2f) -> vec4f {
-    return textureSample(imageTexture, imageSampler, uv);
+    return vec4(mask * color);
 }
 
 struct CurveHit {

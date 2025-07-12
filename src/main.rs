@@ -37,6 +37,7 @@ fn main() {
                 MaterialPlugin::<FireMaterial>::default(),
                 MaterialPlugin::<MultiRippleRingMaterial>::default(),
                 MaterialPlugin::<BezierMaterial>::default(),
+                MaterialPlugin::<BezierSwooshMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -98,6 +99,7 @@ fn setup(
         mut smoke_bomb_material,
         mut multi_ripple_ring_material,
         mut bezier_material,
+        mut bezier_swoosh_material,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -106,6 +108,7 @@ fn setup(
         ResMut<Assets<SmokeBombMaterial>>,
         ResMut<Assets<MultiRippleRingMaterial>>,
         ResMut<Assets<BezierMaterial>>,
+        ResMut<Assets<BezierSwooshMaterial>>,
     ),
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
     asset_server: Res<AssetServer>,
@@ -115,6 +118,20 @@ fn setup(
         Camera3d::default(),
         Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
         Visibility::default(),
+    ));
+
+    // Even though we don't use the fourth dimension, Bevy wants them as 4d
+    let bezier_swoosh_control_points: Vec<[f32; 4]> = vec![
+        [-0.7, 0.9, 2.0, 0.0],
+        [1.2, 1.0, 8.0, 0.0],
+        [-0.2, -0.9, 6.0, 0.0],
+        [-0.9, 0.7, 0.0, 0.0],
+    ];
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(bezier_swoosh_material.add(BezierSwooshMaterial {
+            control_points: buffers.add(ShaderStorageBuffer::from(bezier_swoosh_control_points)),
+        })),
     ));
 
     // Even though we don't use the fourth dimension, Bevy wants them as 4d
