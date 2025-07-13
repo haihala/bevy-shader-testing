@@ -38,6 +38,7 @@ fn main() {
                 MaterialPlugin::<MultiRippleRingMaterial>::default(),
                 MaterialPlugin::<BezierMaterial>::default(),
                 MaterialPlugin::<BezierSwooshMaterial>::default(),
+                MaterialPlugin::<NormalCubeMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -100,6 +101,7 @@ fn setup(
         mut multi_ripple_ring_material,
         mut bezier_material,
         mut bezier_swoosh_material,
+        mut normal_cube_material,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -109,6 +111,7 @@ fn setup(
         ResMut<Assets<MultiRippleRingMaterial>>,
         ResMut<Assets<BezierMaterial>>,
         ResMut<Assets<BezierSwooshMaterial>>,
+        ResMut<Assets<NormalCubeMaterial>>,
     ),
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
     asset_server: Res<AssetServer>,
@@ -118,6 +121,11 @@ fn setup(
         Camera3d::default(),
         Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
         Visibility::default(),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(normal_cube_material.add(NormalCubeMaterial {})),
     ));
 
     // Even though we don't use the fourth dimension, Bevy wants them as 4d

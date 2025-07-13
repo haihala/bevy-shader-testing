@@ -371,3 +371,16 @@ impl Material for BezierSwooshMaterial {
         AlphaMode::Blend
     }
 }
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct NormalCubeMaterial {}
+
+impl Material for NormalCubeMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/normal-cube.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}

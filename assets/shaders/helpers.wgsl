@@ -11,6 +11,18 @@ fn remap(val: f32, curr_a: f32, curr_b: f32, new_a: f32, new_b: f32) -> f32 {
     return norm * (new_b - new_a) + new_a;
 }
 
+fn signed_distance_from_line(point: vec2f, start: vec2f, end: vec2f) -> f32 {
+    let line = end - start;
+    let offset = point - start;
+    return (line.x * offset.y - line.y * offset.x) / length(line);
+}
+
+fn project_to_line(point: vec2f, start: vec2f, end: vec2f) -> f32 {
+    let rel_point = point-start;
+    let line = end-start;   // Line we are projecting on
+    return dot(rel_point, line) / dot(line, line); // How far along the line we are
+}
+
 // Easing functions from https://easings.net
 // Did type them out by hand, they may have problems
 
