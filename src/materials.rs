@@ -1,10 +1,7 @@
 use bevy::{
     prelude::*,
     reflect::TypePath,
-    render::{
-        render_resource::{AsBindGroup, ShaderRef},
-        storage::ShaderStorageBuffer,
-    },
+    render::render_resource::{AsBindGroup, ShaderRef},
 };
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -339,10 +336,12 @@ impl Material for VertexTest {
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct BezierMaterial {
-    #[storage(0, read_only)]
-    pub control_points: Handle<ShaderStorageBuffer>,
-    #[texture(1)]
-    #[sampler(2)]
+    #[uniform(0)]
+    pub control_points: [Vec3; 10],
+    #[uniform(1)]
+    pub curves: u32, // 1, 2, or 3
+    #[texture(2)]
+    #[sampler(3)]
     pub texture: Option<Handle<Image>>,
 }
 
@@ -358,8 +357,10 @@ impl Material for BezierMaterial {
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct BezierSwooshMaterial {
-    #[storage(0, read_only)]
-    pub control_points: Handle<ShaderStorageBuffer>,
+    #[uniform(0)]
+    pub control_points: [Vec3; 10],
+    #[uniform(1)]
+    pub curves: u32, // 1, 2, or 3
 }
 
 impl Material for BezierSwooshMaterial {

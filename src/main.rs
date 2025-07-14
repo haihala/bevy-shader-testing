@@ -3,7 +3,6 @@ use std::f32::consts::PI;
 use bevy::{
     input::{keyboard::KeyboardInput, ButtonState},
     prelude::*,
-    render::storage::ShaderStorageBuffer,
 };
 
 mod materials;
@@ -113,7 +112,6 @@ fn setup(
         ResMut<Assets<BezierSwooshMaterial>>,
         ResMut<Assets<NormalCubeMaterial>>,
     ),
-    mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
     asset_server: Res<AssetServer>,
 ) {
     commands.insert_resource(Selected(0));
@@ -129,38 +127,51 @@ fn setup(
     ));
 
     // Even though we don't use the fourth dimension, Bevy wants them as 4d
-    let bezier_swoosh_control_points: Vec<[f32; 4]> = vec![
-        [-0.7, 0.9, 2.0, 0.0],
-        [1.2, 1.0, 8.0, 0.0],
-        [-0.2, -0.9, 6.0, 0.0],
-        [-0.9, 0.7, 0.0, 0.0],
+    let bezier_swoosh_control_points: Vec<Vec3> = vec![
+        Vec3::new(-0.7, 0.9, 2.0),
+        Vec3::new(1.2, 1.0, 8.0),
+        Vec3::new(-0.2, -0.9, 6.0),
+        Vec3::new(-0.9, 0.7, 0.0),
     ];
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(bezier_swoosh_material.add(BezierSwooshMaterial {
-            control_points: buffers.add(ShaderStorageBuffer::from(bezier_swoosh_control_points)),
-        })),
+        MeshMaterial3d(
+            bezier_swoosh_material.add(BezierSwooshMaterial {
+                control_points: pad_to(bezier_swoosh_control_points, 10)
+                    .as_slice()
+                    .try_into()
+                    .unwrap(),
+                curves: 1,
+            }),
+        ),
     ));
 
     // Even though we don't use the fourth dimension, Bevy wants them as 4d
-    let bezier_control_points: Vec<[f32; 4]> = vec![
+    let bezier_control_points = vec![
         // Set 1
-        [-0.9, -0.9, 2.0, 0.0],
-        [1.0, 1.0, 10.0, 0.0],
-        [-2.0, 1.5, 10.0, 0.0],
-        [-0.2, -0.2, 5.0, 0.0],
+        Vec3::new(-0.9, -0.9, 2.0),
+        Vec3::new(1.0, 1.0, 10.0),
+        Vec3::new(-2.0, 1.5, 10.0),
+        Vec3::new(-0.2, -0.2, 5.0),
         // Set 2 (first anchor is assumed to be the last point of previous curve)
         // Think of it as auto-continuity
-        [1.6, -1.9, 10.0, 0.0],
-        [-3.0, 0.2, 10.0, 0.0],
-        [0.9, 0.0, 2.0, 0.0],
+        Vec3::new(1.6, -1.9, 10.0),
+        Vec3::new(-3.0, 0.2, 10.0),
+        Vec3::new(0.9, 0.0, 2.0),
     ];
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(bezier_material.add(BezierMaterial {
-            control_points: buffers.add(ShaderStorageBuffer::from(bezier_control_points)),
-            texture: Some(asset_server.load("pictures/smiley.png")),
-        })),
+        MeshMaterial3d(
+            bezier_material.add(BezierMaterial {
+                control_points: pad_to(bezier_control_points, 10)
+                    .as_slice()
+                    .try_into()
+                    .unwrap(),
+                curves: 2,
+
+                texture: Some(asset_server.load("pictures/smiley.png")),
+            }),
+        ),
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
@@ -355,4 +366,9 @@ fn update_selection(
             tf.scale = Vec3::splat(1.0);
         }
     }
+}
+
+fn pad_to<T: Default + Clone>(input: Vec<T>, desired_len: usize) -> Vec<T> {
+    let padding = std::iter::repeat(T::default()).take(desired_len - input.len());
+    input.into_iter().chain(padding).collect::<Vec<_>>()
 }

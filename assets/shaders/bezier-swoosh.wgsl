@@ -8,7 +8,8 @@ const cycle_cooldown = 1.0;
 const total_duration = cycle_duration + cycle_cooldown;
 
 // Z controls relative thickness
-@group(2) @binding(0) var<storage> control_points: array<vec3f>;
+@group(2) @binding(0) var<uniform> control_points: array<vec3f, 10>;
+@group(2) @binding(1) var<uniform> curve_count: u32;
 
 const midline_color = vec4(0.165, 0.133, 0.988, 1.0);
 const stripe_primary_color = vec4(0.892, 0.624, 1.0, 1.0);
@@ -95,12 +96,11 @@ struct CurveHit {
 }
 
 fn calc_curve(coord: vec2f, uv_map_start: f32, uv_map_length: f32) -> CurveHit {
-    let segments = segment_count();
     let curve_length = min(uv_map_length, 1.0 - uv_map_start);
     let section_count = u32(
         max(
             2.0,    // In order to not get rounded ends, we need at least two segments
-            f32(sections_per_curve_per_unit) * curve_length * f32(segments)
+            f32(sections_per_curve_per_unit) * curve_length * f32(curve_count)
         )
     );
     let sections = f32(section_count);
@@ -172,13 +172,8 @@ fn calc_curve(coord: vec2f, uv_map_start: f32, uv_map_length: f32) -> CurveHit {
     return output;
 }
 
-// We recycle the last point of the previous curve as the first of the next
-fn segment_count() -> u32 {
-    return ((arrayLength(&control_points) - 1) / 3);
-}
-
 fn bezier(full_t: f32) -> vec3f {
-    let t_per_set = 1.0 / f32(segment_count());
+    let t_per_set = 1.0 / f32(curve_count);
     let set_index = floor(full_t / t_per_set);
     let offset = 3 * i32(set_index);
     let t = (full_t - (t_per_set * set_index)) / t_per_set;

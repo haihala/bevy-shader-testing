@@ -35,23 +35,23 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
-
-      - name: Install trunk
-        uses: jetli/trunk-action@v0.4.0
-        with:
-          version: "latest"
+        # Assuming we need these?
+        run: |
+          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
+          cargo install wasm-bindgen-cli
 
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
 
       - name: Build Release
-        run: trunk build --release
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          wasm-bindgen --out-name shader-testing --out-dir web/target --target web target/wasm32-unknown-unknown/release/bevy-shader-testing.wasm
 
       - name: optimize Wasm
         uses: NiklasEi/wasm-opt-action@v2
         with:
-          file: dist/*.wasm
+          file: web/target/*.wasm
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -59,7 +59,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "dist"
+          path: "web"
 
       - name: Deploy to GitHub Pages
         id: deployment
