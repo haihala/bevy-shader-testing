@@ -1,12 +1,16 @@
 #import bevy_pbr::forward_io::VertexOutput
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
+struct LFPack {
+    speed: f32,
+    angle: f32,
+    line_thickness: f32,
+    layer_count: i32,
+}
+
 @group(2) @binding(0) var<uniform> base_color: vec4<f32>;
 @group(2) @binding(1) var<uniform> edge_color: vec4<f32>;
-@group(2) @binding(2) var<uniform> speed: f32;
-@group(2) @binding(3) var<uniform> angle: f32;
-@group(2) @binding(4) var<uniform> line_thickness: f32;
-@group(2) @binding(5) var<uniform> layer_count: i32;
+@group(2) @binding(2) var<uniform> pack: LFPack;
 
 #import "shaders/helpers.wgsl"::{PI}
 
@@ -14,6 +18,10 @@
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
+    let speed = pack.speed;
+    let angle = pack.angle;
+    let layer_count = pack.layer_count;
+        
     let time = globals.time * speed;
     let wave = cos(time);
     let centered = 2 * (mesh.uv - 0.5);
@@ -31,6 +39,7 @@ fn fragment(
 }
 
 fn layer(time: f32, ang: f32, coords: vec2<f32>) -> f32 {
+    let line_thickness = pack.line_thickness;
     // Creates the lines that go along the wanted direction
     let angled = (coords.x * cos(ang) + coords.y * sin(ang));
     let stripes = step(abs(sin(angled / line_thickness)), 0.5);

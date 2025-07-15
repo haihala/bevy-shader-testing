@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use bevy::{
     input::{keyboard::KeyboardInput, ButtonState},
     prelude::*,
+    window::WindowMode,
 };
 
 mod materials;
@@ -11,7 +12,13 @@ use materials::*;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                    ..default()
+                }),
+                ..default()
+            }),
             (
                 MaterialPlugin::<FresnelMaterial>::default(),
                 MaterialPlugin::<RippleRingMaterial>::default(),
@@ -127,7 +134,7 @@ fn setup(
     ));
 
     // Even though we don't use the fourth dimension, Bevy wants them as 4d
-    let bezier_swoosh_control_points: Vec<Vec3> = vec![
+    let bezier_swoosh_control_points = vec![
         Vec3::new(-0.7, 0.9, 2.0),
         Vec3::new(1.2, 1.0, 8.0),
         Vec3::new(-0.2, -0.9, 6.0),
@@ -137,11 +144,11 @@ fn setup(
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(
             bezier_swoosh_material.add(BezierSwooshMaterial {
-                control_points: pad_to(bezier_swoosh_control_points, 10)
+                control_points: pad_to(bezier_swoosh_control_points, 16)
                     .as_slice()
                     .try_into()
                     .unwrap(),
-                curves: 1,
+                curves: UVec4::splat(1),
             }),
         ),
     ));
@@ -163,11 +170,11 @@ fn setup(
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(
             bezier_material.add(BezierMaterial {
-                control_points: pad_to(bezier_control_points, 10)
+                control_points: pad_to(bezier_control_points, 16)
                     .as_slice()
                     .try_into()
                     .unwrap(),
-                curves: 2,
+                curves: UVec4::splat(2),
 
                 texture: Some(asset_server.load("pictures/smiley.png")),
             }),
@@ -183,7 +190,9 @@ fn setup(
 
     commands.spawn((
         Mesh3d(meshes.add(Cuboid::from_length(1.0 / 8.0))),
-        MeshMaterial3d(fresnel_materials.add(FresnelMaterial { sharpness: 2.0 })),
+        MeshMaterial3d(fresnel_materials.add(FresnelMaterial {
+            sharpness: Vec4::splat(2.0),
+        })),
         Rotate,
     ));
     commands.spawn((
@@ -226,8 +235,11 @@ fn setup(
         MeshMaterial3d(ripple_ring_materials.add(RippleRingMaterial {
             edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
             base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
-            duration: 0.7,
-            ring_thickness: 0.05,
+            pack: Vec4::new(
+                0.7,  // duration
+                0.05, // ring_thickness
+                0.0, 0.0, // Padding for WASM
+            ),
         })),
     ));
     commands.spawn((
@@ -235,10 +247,12 @@ fn setup(
         MeshMaterial3d(line_field_materials.add(LineFieldMaterial {
             edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
             base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
-            speed: 1.0,
-            angle: 0.0,
-            line_thickness: 0.01,
-            layer_count: 7,
+            pack: LFPack {
+                speed: 1.0,
+                angle: 0.0,
+                line_thickness: 0.01,
+                layer_count: 7,
+            },
         })),
     ));
     commands.spawn((
@@ -254,7 +268,6 @@ fn setup(
         MeshMaterial3d(block_materials.add(BlockMaterial {
             edge_color: LinearRgba::rgb(0.1, 0.2, 1.0),
             base_color: LinearRgba::rgb(1.0, 1.0, 1.0),
-            speed: 1.0,
         })),
     ));
     commands.spawn((
@@ -262,7 +275,6 @@ fn setup(
         MeshMaterial3d(clink_materials.add(ClinkMaterial {
             edge_color: LinearRgba::rgb(0.9, 0.1, 0.9),
             base_color: LinearRgba::rgb(1.0, 0.5, 1.0),
-            speed: 1.2,
         })),
     ));
 
@@ -368,7 +380,11 @@ fn update_selection(
     }
 }
 
-fn pad_to<T: Default + Clone>(input: Vec<T>, desired_len: usize) -> Vec<T> {
-    let padding = std::iter::repeat(T::default()).take(desired_len - input.len());
-    input.into_iter().chain(padding).collect::<Vec<_>>()
+fn pad_to(input: Vec<Vec3>, desired_len: usize) -> Vec<Vec4> {
+    let padding = std::iter::repeat(Vec3::default()).take(desired_len - input.len());
+    input
+        .into_iter()
+        .chain(padding)
+        .map(|v| v.extend(0.0))
+        .collect::<Vec<_>>()
 }

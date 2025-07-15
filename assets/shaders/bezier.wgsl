@@ -6,8 +6,8 @@
 const total_duration = 3.0;
 
 // Z controls relative thickness
-@group(2) @binding(0) var<uniform> control_points: array<vec3f, 10>;
-@group(2) @binding(1) var<uniform> curve_count: u32;
+@group(2) @binding(0) var<uniform> control_points: array<vec3f, 16>;
+@group(2) @binding(1) var<uniform> curve_count: vec4u;
 @group(2) @binding(2) var imageTexture: texture_2d<f32>;
 @group(2) @binding(3) var imageSampler: sampler;
 
@@ -125,7 +125,7 @@ fn calc_curve(coord: vec2f, uv_map_start: f32, uv_map_length: f32) -> CurveHit {
     let section_count = u32(
         max(
             2.0,    // In order to not get rounded ends, we need at least two segments
-            f32(sections_per_curve_per_unit) * curve_length * f32(curve_count)
+            f32(sections_per_curve_per_unit) * curve_length * f32(curve_count.x)
         )
     );
     let sections = f32(section_count);
@@ -198,7 +198,7 @@ fn calc_curve(coord: vec2f, uv_map_start: f32, uv_map_length: f32) -> CurveHit {
 }
 
 fn bezier(full_t: f32) -> vec3f {
-    let t_per_set = 1.0 / f32(curve_count);
+    let t_per_set = 1.0 / f32(curve_count.x);
     let set_index = floor(full_t / t_per_set);
     let offset = 3 * i32(set_index);
     let t = (full_t - (t_per_set * set_index)) / t_per_set;

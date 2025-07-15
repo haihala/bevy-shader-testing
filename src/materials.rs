@@ -1,13 +1,13 @@
 use bevy::{
     prelude::*,
     reflect::TypePath,
-    render::render_resource::{AsBindGroup, ShaderRef},
+    render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
 };
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FresnelMaterial {
     #[uniform(0)]
-    pub sharpness: f32,
+    pub sharpness: Vec4, // Needed for WASM padding, only X is used
 }
 
 impl Material for FresnelMaterial {
@@ -20,6 +20,15 @@ impl Material for FresnelMaterial {
     }
 }
 
+#[derive(Debug, Clone, ShaderType)]
+#[repr(C, align(16))]
+pub struct LFPack {
+    pub speed: f32,
+    pub angle: f32,
+    pub line_thickness: f32,
+    pub layer_count: i32,
+}
+
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct LineFieldMaterial {
     #[uniform(0)]
@@ -27,13 +36,7 @@ pub struct LineFieldMaterial {
     #[uniform(1)]
     pub edge_color: LinearRgba,
     #[uniform(2)]
-    pub speed: f32,
-    #[uniform(3)]
-    pub angle: f32,
-    #[uniform(4)]
-    pub line_thickness: f32,
-    #[uniform(5)]
-    pub layer_count: i32,
+    pub pack: LFPack,
 }
 
 impl Material for LineFieldMaterial {
@@ -71,9 +74,9 @@ pub struct RippleRingMaterial {
     #[uniform(1)]
     pub edge_color: LinearRgba,
     #[uniform(2)]
-    pub duration: f32,
-    #[uniform(3)]
-    pub ring_thickness: f32,
+    pub pack: Vec4,
+    // duration = pack.x;
+    // ring_thickness = pack.y;
 }
 
 impl Material for RippleRingMaterial {
@@ -112,8 +115,6 @@ pub struct BlockMaterial {
     pub base_color: LinearRgba,
     #[uniform(1)]
     pub edge_color: LinearRgba,
-    #[uniform(2)]
-    pub speed: f32,
 }
 
 impl Material for BlockMaterial {
@@ -132,8 +133,6 @@ pub struct ClinkMaterial {
     pub base_color: LinearRgba,
     #[uniform(1)]
     pub edge_color: LinearRgba,
-    #[uniform(2)]
-    pub speed: f32,
 }
 
 impl Material for ClinkMaterial {
@@ -334,12 +333,18 @@ impl Material for VertexTest {
     }
 }
 
+#[derive(Debug, Clone, ShaderType)]
+#[repr(C, align(16))]
+pub struct UPack {
+    pub value: u32,
+}
+
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct BezierMaterial {
     #[uniform(0)]
-    pub control_points: [Vec3; 10],
+    pub control_points: [Vec4; 16],
     #[uniform(1)]
-    pub curves: u32, // 1, 2, or 3
+    pub curves: UVec4, // Padding for WASM, only X matters
     #[texture(2)]
     #[sampler(3)]
     pub texture: Option<Handle<Image>>,
@@ -358,9 +363,9 @@ impl Material for BezierMaterial {
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct BezierSwooshMaterial {
     #[uniform(0)]
-    pub control_points: [Vec3; 10],
+    pub control_points: [Vec4; 16],
     #[uniform(1)]
-    pub curves: u32, // 1, 2, or 3
+    pub curves: UVec4, // Padding for WASM, only X matters
 }
 
 impl Material for BezierSwooshMaterial {

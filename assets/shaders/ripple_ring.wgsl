@@ -3,8 +3,8 @@
 
 @group(2) @binding(0) var<uniform> base_color: vec4<f32>;
 @group(2) @binding(1) var<uniform> edge_color: vec4<f32>;
-@group(2) @binding(2) var<uniform> duration: f32;
-@group(2) @binding(3) var<uniform> ring_thickness: f32;
+@group(2) @binding(2) var<uniform> pack: vec4f;
+
 
 #import "shaders/helpers.wgsl"::{PI, easeOutQuint}
 
@@ -12,6 +12,8 @@
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
+    let duration = pack.x;
+    let ring_thickness = pack.y;
     // Coordinate relative to middle
     let centered = 2 * (mesh.uv - 0.5);
     let time = easeOutQuint((globals.time % duration) / duration);

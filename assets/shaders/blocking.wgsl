@@ -3,7 +3,8 @@
 
 @group(2) @binding(0) var<uniform> base_color: vec4<f32>;
 @group(2) @binding(1) var<uniform> edge_color: vec4<f32>;
-@group(2) @binding(2) var<uniform> speed: f32;
+
+const speed = 1.0;
 
 @fragment
 fn fragment(
