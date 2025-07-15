@@ -48,7 +48,15 @@ fn main() {
             ),
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, (rotate_meshes, update_selection))
+        .add_systems(
+            Update,
+            (
+                rotate_meshes,
+                update_selection,
+                keyboard_system,
+                button_system,
+            ),
+        )
         .run();
 }
 
@@ -310,7 +318,7 @@ fn setup(
     ));
 
     commands.spawn((
-        Text::new("Select shader with W/A/S/D"),
+        Text::new("Select shader with W/A/S/D or the buttons"),
         Node {
             // Pad it out a bit
             left: Val::Px(10.0),
@@ -318,6 +326,45 @@ fn setup(
             ..default()
         },
     ));
+
+    commands.spawn((
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::SpaceBetween,
+            padding: UiRect::all(Val::Percent(1.0)),
+            ..default()
+        },
+        children![button(-1, "previous"), button(1, "next")],
+    ));
+}
+
+const BORDER_COLOR: Color = Color::linear_rgb(0.1, 0.1, 0.1);
+const NORMAL_BUTTON: Color = Color::WHITE;
+const HOVERED_BUTTON: Color = Color::linear_rgb(0.6, 0.6, 0.6);
+const PRESSED_BUTTON: Color = Color::linear_rgb(0.4, 0.5, 0.8);
+
+#[derive(Debug, Component)]
+struct ButtonDelta(i32);
+
+fn button(delta: i32, text: &'static str) -> impl Bundle + use<> {
+    (
+        Button,
+        ButtonDelta(delta),
+        Node {
+            padding: UiRect::all(Val::Px(10.0)),
+            border: UiRect::all(Val::Px(3.0)),
+
+            // Center the text
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        BorderColor(BORDER_COLOR),
+        BorderRadius::all(Val::Px(3.0)),
+        children![Text::new(text), TextColor(NORMAL_BUTTON)],
+    )
 }
 
 fn rotate_meshes(mut mesh_query: Query<&mut Transform, With<Rotate>>, time: Res<Time>) {
@@ -331,11 +378,39 @@ const ROW_SIZE: usize = 8;
 const SQUARE_EDGE: f32 = 0.25;
 const POS0: Vec3 = Vec3::new(-2.0, 1.0, 0.0);
 
-fn update_selection(
+fn button_system(
+    interaction_query: Query<
+        (&Interaction, &ButtonDelta, &Children),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut text_cols: Query<&mut TextColor>,
+    mut selection: ResMut<Selected>,
+    meshes: Query<&Transform, (With<Mesh3d>, Without<Blank>)>,
+) {
+    let selectables = meshes.iter().count();
+
+    for (interaction, delta, children) in &interaction_query {
+        let mut color = text_cols.get_mut(children[0]).unwrap();
+
+        match *interaction {
+            Interaction::Pressed => {
+                *color = PRESSED_BUTTON.into();
+                let Selected(index) = *selection;
+                *selection = Selected(((index as i32 + delta.0) % selectables as i32) as usize);
+            }
+            Interaction::Hovered => {
+                *color = HOVERED_BUTTON.into();
+            }
+            Interaction::None => {
+                *color = NORMAL_BUTTON.into();
+            }
+        }
+    }
+}
+fn keyboard_system(
     mut keyboard_input_events: EventReader<KeyboardInput>,
     mut selection: ResMut<Selected>,
-    mut meshes: Query<&mut Transform, (With<Mesh3d>, Without<Blank>)>,
-    mut blanks: Query<&mut Transform, With<Blank>>,
+    meshes: Query<&Transform, (With<Mesh3d>, Without<Blank>)>,
 ) {
     let selectables = meshes.iter().count();
     let Selected(selected_index) = *selection;
@@ -369,7 +444,13 @@ fn update_selection(
             _ => {}
         }
     }
+}
 
+fn update_selection(
+    selection: ResMut<Selected>,
+    mut meshes: Query<&mut Transform, (With<Mesh3d>, Without<Blank>)>,
+    mut blanks: Query<&mut Transform, With<Blank>>,
+) {
     let Selected(new_selection) = *selection;
 
     for (index, mut tf) in meshes.iter_mut().enumerate() {
