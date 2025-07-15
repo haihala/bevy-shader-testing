@@ -333,12 +333,6 @@ impl Material for VertexTest {
     }
 }
 
-#[derive(Debug, Clone, ShaderType)]
-#[repr(C, align(16))]
-pub struct UPack {
-    pub value: u32,
-}
-
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct BezierMaterial {
     #[uniform(0)]
