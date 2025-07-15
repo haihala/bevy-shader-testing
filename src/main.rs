@@ -308,6 +308,16 @@ fn setup(
         MeshMaterial3d(standard_materials.add(StandardMaterial::default())),
         Blank,
     ));
+
+    commands.spawn((
+        Text::new("Select shader with W/A/S/D"),
+        Node {
+            // Pad it out a bit
+            left: Val::Px(10.0),
+            top: Val::Px(10.0),
+            ..default()
+        },
+    ));
 }
 
 fn rotate_meshes(mut mesh_query: Query<&mut Transform, With<Rotate>>, time: Res<Time>) {
