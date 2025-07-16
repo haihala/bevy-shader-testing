@@ -18,27 +18,25 @@ fn fragment(
 }
 
 
-const particle_amount = 30;
+const particle_amount = 50;
 const particle_seed = 69;
-const particle_gravity = 4.0;
+const particle_gravity = 2.5;
 const particle_min_angle = -PI / 6;
 const particle_max_angle = PI * 0.2;
 const particle_min_velocity = 0.5;
-const particle_max_velocity = 1.5;
+const particle_max_velocity = 1.7;
 const particle_size_vel_influence = 0.5;
-const particle_deceleration_x = 0.15;
 const particle_min_size = 0.015;
 const particle_max_size = 0.02;
 const particle_shrink_speed = 0.005;
-const particle_min_start_x = -0.8;
-const particle_max_start_x = 0.2;
-const particle_min_start_y = -0.3;
-const particle_max_start_y = 0.5;
+const particle_start_center = vec2(-0.3, 0.2);
+const particle_start_distance = 0.5;
 const particle_inner_color = vec3(0.9, 0.85, 0.85);
 const particle_border_color = vec3(0.7, 0.65, 0.65);
 
 fn particles(coord: vec2f) -> vec4f {
     let t = cycle();
+    let time_fade = (0.5-0.8*t);
 
     var out = 0.0;
 
@@ -63,20 +61,22 @@ fn particles(coord: vec2f) -> vec4f {
     }
 
     let color = mix(particle_inner_color, particle_border_color, out);
-    return vec4(color.xyz, 1.0);
+    return vec4(color.xyz, time_fade);
 }
 
 fn point_in_arc(key: f32, t: f32, size_rand: f32) -> vec2f {
     let angle = rand11(key+1.0) * (particle_max_angle - particle_min_angle) + particle_min_angle;
     let size_influence = max(0.0, 1.0 - particle_size_vel_influence * pow(size_rand, 10.0));
     let velocity = (rand11(key+2.0) * (particle_max_velocity - particle_min_velocity) + particle_min_velocity) * size_influence;
-    let start_x = rand11(key+3.0) * (particle_max_start_x - particle_min_start_x) + particle_min_start_x;
-    let start_y = rand11(key+4.0) * (particle_max_start_y - particle_min_start_y) + particle_min_start_y;
+    let pos_angle = rand11(key+5.0) * PI * 2;
+    let pos_dist = pow(rand11(key+6.0), 0.5) * particle_start_distance;
+    let offset = vec2(cos(pos_angle), sin(pos_angle)) * pos_dist;
+    let spawn_pos = particle_start_center + offset;
 
     let launch = vec2(cos(angle), sin(angle)) * velocity;
 
-    let rock_x = start_x + launch.x * t;
-    let rock_y = launch.y * t - particle_gravity * pow(t, 2.0) / 2.0 + start_y;
+    let rock_x = spawn_pos.x + launch.x * t;
+    let rock_y = launch.y * t - particle_gravity * pow(t, 2.0) / 2.0 + spawn_pos.y;
 
     let rock_pos = vec2(rock_x, rock_y);
     return rock_pos;
@@ -86,18 +86,18 @@ const noise_layers = 3;
 
 fn powder(coord: vec2f) -> vec4f {
     let t = cycle();
-    let time_fade = easeOutQuint(1-t) * easeOutQuint(clamp(t*2.0, 0.0, 1.0));
+    let time_fade = easeOutQuint(1-1.2*t) * easeOutQuint(clamp(t*2.0, 0.0, 1.0));
 
     let inner_center = vec2(-1.3, -1.0);
     let inner_radius = 1.0;
     let inner_val = length(inner_center - coord) - inner_radius;
 
     let outer_center = vec2(-0.9, -1.5);
-    let outer_radius = 2.3;
+    let outer_radius = 2.5;
     let outer_val = length(outer_center - coord) - outer_radius;
 
     let dist_center = vec2(-0.9, 0.9);
-    let dist_radius = 2.2;
+    let dist_radius = 2.4;
     let dist_val = clamp(dist_radius - length(dist_center - coord), 0.0, 1.0);
 
     let left_dist = abs(-1 - coord.x);
@@ -134,7 +134,7 @@ fn powder(coord: vec2f) -> vec4f {
         noise += perlinNoise2(pos) * weight;
         total_noise += weight;
     }
-    noise = clamp(2*noise / total_noise, 0.3, 1.0);
+    noise = clamp(noise / total_noise, 0.2, 1.0);
 
     return vec4(noise * mask * time_fade);
 }
