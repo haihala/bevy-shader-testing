@@ -70,6 +70,7 @@ struct Rotate;
 #[derive(Debug, Component)]
 struct Blank;
 
+#[allow(clippy::type_complexity)]
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -385,6 +386,7 @@ const ROW_SIZE: usize = 8;
 const SQUARE_EDGE: f32 = 0.25;
 const POS0: Vec3 = Vec3::new(-2.0, 1.0, 0.0);
 
+#[allow(clippy::type_complexity)]
 fn button_system(
     interaction_query: Query<
         (&Interaction, &ButtonDelta, &Children),
@@ -479,7 +481,7 @@ fn update_selection(
 }
 
 fn pad_to(input: Vec<Vec3>, desired_len: usize) -> Vec<Vec4> {
-    let padding = std::iter::repeat(Vec3::default()).take(desired_len - input.len());
+    let padding = std::iter::repeat_n(Vec3::default(), desired_len - input.len());
     input
         .into_iter()
         .chain(padding)
