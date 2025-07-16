@@ -384,3 +384,16 @@ impl Material for NormalCubeMaterial {
         AlphaMode::Blend
     }
 }
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct SugarCoatMaterial {}
+
+impl Material for SugarCoatMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/sugarcoat.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}

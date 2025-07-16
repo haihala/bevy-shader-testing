@@ -45,6 +45,7 @@ fn main() {
                 MaterialPlugin::<BezierMaterial>::default(),
                 MaterialPlugin::<BezierSwooshMaterial>::default(),
                 MaterialPlugin::<NormalCubeMaterial>::default(),
+                MaterialPlugin::<SugarCoatMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -116,6 +117,7 @@ fn setup(
         mut bezier_material,
         mut bezier_swoosh_material,
         mut normal_cube_material,
+        mut sugarcoat_material,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -126,6 +128,7 @@ fn setup(
         ResMut<Assets<BezierMaterial>>,
         ResMut<Assets<BezierSwooshMaterial>>,
         ResMut<Assets<NormalCubeMaterial>>,
+        ResMut<Assets<SugarCoatMaterial>>,
     ),
     asset_server: Res<AssetServer>,
 ) {
@@ -133,6 +136,11 @@ fn setup(
     commands.spawn((
         Camera3d::default(),
         Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(sugarcoat_material.add(SugarCoatMaterial {})),
     ));
 
     commands.spawn((
