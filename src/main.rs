@@ -413,7 +413,12 @@ fn button_system(
             Interaction::Pressed => {
                 *color = PRESSED_BUTTON.into();
                 let Selected(index) = *selection;
-                *selection = Selected(((index as i32 + delta.0) % selectables as i32) as usize);
+                selection.0 = if index == 0 && delta.0 == -1 {
+                    // Wrap
+                    selectables - 1
+                } else {
+                    ((index as i32 + delta.0) % selectables as i32) as usize
+                };
             }
             Interaction::Hovered => {
                 *color = HOVERED_BUTTON.into();
