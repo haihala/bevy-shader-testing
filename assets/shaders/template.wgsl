@@ -11,7 +11,7 @@ fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
     let coord = norm_coord(mesh.uv);
-    return vec4(cycle() * coord);
+    return vec4((cycle() * coord).xy, 0.0, 1.0);
 }
 
 fn norm_coord(uv: vec2f) -> vec2f {

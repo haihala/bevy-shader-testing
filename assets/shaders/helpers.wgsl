@@ -23,6 +23,23 @@ fn project_to_line(point: vec2f, start: vec2f, end: vec2f) -> f32 {
     return dot(rel_point, line) / dot(line, line); // How far along the line we are
 }
 
+fn point_in_tri(point: vec2f, a: vec2f, b: vec2f, c: vec2f) -> bool {
+    let ab = signed_distance_from_line(point, a, b);
+    let bc = signed_distance_from_line(point, b, c);
+    let ca = signed_distance_from_line(point, c, a);
+
+    return ab > 0.0 && bc > 0.0 && ca > 0.0;
+}
+
+fn point_in_quad(point: vec2f, a: vec2f, b: vec2f, c: vec2f, d: vec2f) -> bool {
+    let ab = signed_distance_from_line(point, b, a);
+    let bc = signed_distance_from_line(point, c, b);
+    let cd = signed_distance_from_line(point, d, c);
+    let da = signed_distance_from_line(point, a, d);
+
+    return ab > 0.0 && bc > 0.0 && cd > 0.0 && da > 0.0;
+}
+
 // Easing functions from https://easings.net
 // Did type them out by hand, they may have problems
 

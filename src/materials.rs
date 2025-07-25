@@ -397,3 +397,16 @@ impl Material for SugarCoatMaterial {
         AlphaMode::Blend
     }
 }
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct BillBurst {}
+
+impl Material for BillBurst {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/bill-burst.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
