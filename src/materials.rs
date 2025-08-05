@@ -399,11 +399,27 @@ impl Material for SugarCoatMaterial {
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
-pub struct BillBurst {}
+pub struct BillBurstMaterial {}
 
-impl Material for BillBurst {
+impl Material for BillBurstMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/bill-burst.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct PoolingMaterial {
+    #[uniform(0)]
+    pub effect: UVec4,
+}
+
+impl Material for PoolingMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/pooling.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {

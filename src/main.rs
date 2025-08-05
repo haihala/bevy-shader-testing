@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use bevy::{
     input::{keyboard::KeyboardInput, ButtonState},
     prelude::*,
+    render::mesh::CapsuleUvProfile,
     window::WindowMode,
 };
 
@@ -46,7 +47,8 @@ fn main() {
                 MaterialPlugin::<BezierSwooshMaterial>::default(),
                 MaterialPlugin::<NormalCubeMaterial>::default(),
                 MaterialPlugin::<SugarCoatMaterial>::default(),
-                MaterialPlugin::<BillBurst>::default(),
+                MaterialPlugin::<BillBurstMaterial>::default(),
+                MaterialPlugin::<PoolingMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -121,6 +123,7 @@ fn setup(
         mut normal_cube_material,
         mut sugarcoat_material,
         mut bill_burst_material,
+        mut pooling_materials,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -132,7 +135,8 @@ fn setup(
         ResMut<Assets<BezierSwooshMaterial>>,
         ResMut<Assets<NormalCubeMaterial>>,
         ResMut<Assets<SugarCoatMaterial>>,
-        ResMut<Assets<BillBurst>>,
+        ResMut<Assets<BillBurstMaterial>>,
+        ResMut<Assets<PoolingMaterial>>,
     ),
     asset_server: Res<AssetServer>,
 ) {
@@ -144,7 +148,21 @@ fn setup(
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(bill_burst_material.add(BillBurst {})),
+        MeshMaterial3d(pooling_materials.add(PoolingMaterial {
+            effect: UVec4::splat(1),
+        })),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(pooling_materials.add(PoolingMaterial {
+            effect: UVec4::splat(0),
+        })),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(bill_burst_material.add(BillBurstMaterial {})),
     ));
 
     commands.spawn((
@@ -225,16 +243,16 @@ fn setup(
     ));
 
     let cylinder_mesh = Cylinder::new(0.125, 0.25).mesh().without_caps().build();
-    let cylinder_rotation = Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0);
+    let cylinder_rotation = Quat::from_axis_angle(Vec3::X, PI / 4.0);
     commands.spawn((
-        Mesh3d(meshes.add(cylinder_mesh.clone())),
+        Mesh3d(meshes.add(cylinder_mesh)),
         Transform::from_rotation(cylinder_rotation),
         MeshMaterial3d(jackpot_material.add(Jackpot {})),
     ));
 
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
-        Transform::from_rotation(Quat::from_euler(EulerRot::XZX, PI / 4.0, 0.0, 0.0)),
+        Transform::from_rotation(Quat::from_axis_angle(Vec3::X, PI / 4.0)),
         MeshMaterial3d(ripple_material.add(RippleMaterial {})),
     ));
     commands.spawn((
