@@ -426,3 +426,16 @@ impl Material for PoolingMaterial {
         AlphaMode::Blend
     }
 }
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct DropletMaterial {}
+
+impl Material for DropletMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/droplet.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}

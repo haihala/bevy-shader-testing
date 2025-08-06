@@ -3,7 +3,6 @@ use std::f32::consts::PI;
 use bevy::{
     input::{keyboard::KeyboardInput, ButtonState},
     prelude::*,
-    render::mesh::CapsuleUvProfile,
     window::WindowMode,
 };
 
@@ -49,6 +48,7 @@ fn main() {
                 MaterialPlugin::<SugarCoatMaterial>::default(),
                 MaterialPlugin::<BillBurstMaterial>::default(),
                 MaterialPlugin::<PoolingMaterial>::default(),
+                MaterialPlugin::<DropletMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -124,6 +124,7 @@ fn setup(
         mut sugarcoat_material,
         mut bill_burst_material,
         mut pooling_materials,
+        mut buttefly_materials,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -137,6 +138,7 @@ fn setup(
         ResMut<Assets<SugarCoatMaterial>>,
         ResMut<Assets<BillBurstMaterial>>,
         ResMut<Assets<PoolingMaterial>>,
+        ResMut<Assets<DropletMaterial>>,
     ),
     asset_server: Res<AssetServer>,
 ) {
@@ -144,6 +146,11 @@ fn setup(
     commands.spawn((
         Camera3d::default(),
         Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(buttefly_materials.add(DropletMaterial {})),
     ));
 
     commands.spawn((
