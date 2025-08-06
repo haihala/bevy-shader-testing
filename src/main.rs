@@ -49,6 +49,7 @@ fn main() {
                 MaterialPlugin::<BillBurstMaterial>::default(),
                 MaterialPlugin::<PoolingMaterial>::default(),
                 MaterialPlugin::<DropletMaterial>::default(),
+                MaterialPlugin::<MandelbrotMaterial>::default(),
             ),
         ))
         .add_systems(Startup, setup)
@@ -124,7 +125,8 @@ fn setup(
         mut sugarcoat_material,
         mut bill_burst_material,
         mut pooling_materials,
-        mut buttefly_materials,
+        mut droplet_materials,
+        mut mandelbrot_materials,
     ): (
         ResMut<Assets<VertexTest>>,
         ResMut<Assets<RippleMaterial>>,
@@ -139,6 +141,7 @@ fn setup(
         ResMut<Assets<BillBurstMaterial>>,
         ResMut<Assets<PoolingMaterial>>,
         ResMut<Assets<DropletMaterial>>,
+        ResMut<Assets<MandelbrotMaterial>>,
     ),
     asset_server: Res<AssetServer>,
 ) {
@@ -150,7 +153,12 @@ fn setup(
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(buttefly_materials.add(DropletMaterial {})),
+        MeshMaterial3d(mandelbrot_materials.add(MandelbrotMaterial {})),
+    ));
+
+    commands.spawn((
+        Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
+        MeshMaterial3d(droplet_materials.add(DropletMaterial {})),
     ));
 
     commands.spawn((

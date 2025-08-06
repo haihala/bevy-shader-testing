@@ -439,3 +439,16 @@ impl Material for DropletMaterial {
         AlphaMode::Blend
     }
 }
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct MandelbrotMaterial {}
+
+impl Material for MandelbrotMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/mandelbrot.wgsl".into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Blend
+    }
+}
