@@ -32,12 +32,12 @@ fn fragment(
         if effect.x == 0 {
             out = max(ring(part.uv), out);
         } else if effect.x == 1 {
-            out += heart(part.uv, seed);
+            out = max(heart(part.uv, seed), out);
         }
 
     }
 
-    return vec4(out);
+    return out;
 }
 
 fn ring(uv: vec2f) -> vec4f {
@@ -78,10 +78,10 @@ fn heart(uv: vec2f, seed: f32) -> vec4f {
         vec2(-sin(angle), cos(angle)),
     );
     
-    var p = rot * norm_coord(uv) * 1.5;
+    var p = rot * norm_coord(uv);
 
     p.x = abs(p.x);
-    p.y = -p.y;
+    p.y = 0.5-p.y;
 
     var heart_sdf = 0.0;
     if( p.y+p.x>1.0 ) {
@@ -152,9 +152,9 @@ fn cycle_count() -> f32 {
     let time = globals.time + 10000;
     return floor(time / cycle_duration);
 }
+
 fn cycle() -> f32 {
     let time = globals.time + 10000;
-    // let time = 1000.0;
     return min(1.0, fract(time / cycle_duration) * cycle_duration / active_duration);
 }
 

@@ -47,7 +47,7 @@ fn main() {
                 MaterialPlugin::<NormalCubeMaterial>::default(),
                 MaterialPlugin::<SugarCoatMaterial>::default(),
                 MaterialPlugin::<BillBurstMaterial>::default(),
-                MaterialPlugin::<PoolingMaterial>::default(),
+                MaterialPlugin::<ParticlesMaterial>::default(),
                 MaterialPlugin::<DropletMaterial>::default(),
                 MaterialPlugin::<MandelbrotMaterial>::default(),
             ),
@@ -113,18 +113,18 @@ fn setup(
         ResMut<Assets<SparksMaterial>>,
     ),
     (
-        mut vertex_material,
-        mut ripple_material,
-        mut jackpot_material,
-        mut fire_material,
-        mut smoke_bomb_material,
-        mut multi_ripple_ring_material,
-        mut bezier_material,
-        mut bezier_swoosh_material,
-        mut normal_cube_material,
-        mut sugarcoat_material,
-        mut bill_burst_material,
-        mut pooling_materials,
+        mut vertex_materials,
+        mut ripple_materials,
+        mut jackpot_materials,
+        mut fire_materials,
+        mut smoke_bomb_materials,
+        mut multi_ripple_ring_materials,
+        mut bezier_materials,
+        mut bezier_swoosh_materials,
+        mut normal_cube_materials,
+        mut sugarcoat_materials,
+        mut bill_burst_materials,
+        mut particles_materials,
         mut droplet_materials,
         mut mandelbrot_materials,
     ): (
@@ -139,7 +139,7 @@ fn setup(
         ResMut<Assets<NormalCubeMaterial>>,
         ResMut<Assets<SugarCoatMaterial>>,
         ResMut<Assets<BillBurstMaterial>>,
-        ResMut<Assets<PoolingMaterial>>,
+        ResMut<Assets<ParticlesMaterial>>,
         ResMut<Assets<DropletMaterial>>,
         ResMut<Assets<MandelbrotMaterial>>,
     ),
@@ -163,31 +163,31 @@ fn setup(
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(pooling_materials.add(PoolingMaterial {
+        MeshMaterial3d(particles_materials.add(ParticlesMaterial {
             effect: UVec4::splat(1),
         })),
     ));
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(pooling_materials.add(PoolingMaterial {
+        MeshMaterial3d(particles_materials.add(ParticlesMaterial {
             effect: UVec4::splat(0),
         })),
     ));
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(bill_burst_material.add(BillBurstMaterial {})),
+        MeshMaterial3d(bill_burst_materials.add(BillBurstMaterial {})),
     ));
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(sugarcoat_material.add(SugarCoatMaterial {})),
+        MeshMaterial3d(sugarcoat_materials.add(SugarCoatMaterial {})),
     ));
 
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(normal_cube_material.add(NormalCubeMaterial {})),
+        MeshMaterial3d(normal_cube_materials.add(NormalCubeMaterial {})),
     ));
 
     // Even though we don't use the fourth dimension, Bevy wants them as 4d
@@ -200,7 +200,7 @@ fn setup(
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(
-            bezier_swoosh_material.add(BezierSwooshMaterial {
+            bezier_swoosh_materials.add(BezierSwooshMaterial {
                 control_points: pad_to(bezier_swoosh_control_points, 16)
                     .as_slice()
                     .try_into()
@@ -226,7 +226,7 @@ fn setup(
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
         MeshMaterial3d(
-            bezier_material.add(BezierMaterial {
+            bezier_materials.add(BezierMaterial {
                 control_points: pad_to(bezier_control_points, 16)
                     .as_slice()
                     .try_into()
@@ -239,7 +239,7 @@ fn setup(
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(multi_ripple_ring_material.add(MultiRippleRingMaterial {
+        MeshMaterial3d(multi_ripple_ring_materials.add(MultiRippleRingMaterial {
             edge_color: LinearRgba::rgb(1.0, 1.0, 1.0),
             base_color: LinearRgba::rgb(0.3, 1.0, 0.4),
         })),
@@ -254,7 +254,7 @@ fn setup(
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(fire_material.add(FireMaterial {})),
+        MeshMaterial3d(fire_materials.add(FireMaterial {})),
     ));
 
     let cylinder_mesh = Cylinder::new(0.125, 0.25).mesh().without_caps().build();
@@ -262,17 +262,17 @@ fn setup(
     commands.spawn((
         Mesh3d(meshes.add(cylinder_mesh)),
         Transform::from_rotation(cylinder_rotation),
-        MeshMaterial3d(jackpot_material.add(Jackpot {})),
+        MeshMaterial3d(jackpot_materials.add(Jackpot {})),
     ));
 
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(0.25, 0.25).subdivisions(20))),
         Transform::from_rotation(Quat::from_axis_angle(Vec3::X, PI / 4.0)),
-        MeshMaterial3d(ripple_material.add(RippleMaterial {})),
+        MeshMaterial3d(ripple_materials.add(RippleMaterial {})),
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(vertex_material.add(VertexTest {})),
+        MeshMaterial3d(vertex_materials.add(VertexTest {})),
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
@@ -280,7 +280,7 @@ fn setup(
     ));
     commands.spawn((
         Mesh3d(meshes.add(Rectangle::new(0.25, 0.25))),
-        MeshMaterial3d(smoke_bomb_material.add(SmokeBombMaterial {})),
+        MeshMaterial3d(smoke_bomb_materials.add(SmokeBombMaterial {})),
     ));
 
     commands.spawn((

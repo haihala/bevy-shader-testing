@@ -412,14 +412,14 @@ impl Material for BillBurstMaterial {
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
-pub struct PoolingMaterial {
+pub struct ParticlesMaterial {
     #[uniform(0)]
     pub effect: UVec4,
 }
 
-impl Material for PoolingMaterial {
+impl Material for ParticlesMaterial {
     fn fragment_shader() -> ShaderRef {
-        "shaders/pooling.wgsl".into()
+        "shaders/particles.wgsl".into()
     }
 
     fn alpha_mode(&self) -> AlphaMode {
