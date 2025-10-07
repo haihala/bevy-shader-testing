@@ -1,4 +1,4 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals};
 
 #import "shaders/helpers.wgsl"::{PI};
@@ -6,10 +6,10 @@
 const total_duration = 3.0;
 
 // Z controls relative thickness
-@group(2) @binding(0) var<uniform> control_points: array<vec3f, 16>;
-@group(2) @binding(1) var<uniform> curve_count: vec4u;
-@group(2) @binding(2) var imageTexture: texture_2d<f32>;
-@group(2) @binding(3) var imageSampler: sampler;
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> control_points: array<vec3f, 16>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(1) var<uniform> curve_count: vec4u;
+@group(#{MATERIAL_BIND_GROUP}) @binding(2) var imageTexture: texture_2d<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(3) var imageSampler: sampler;
 
 const sections_per_curve_per_unit: u32 = 40;
 

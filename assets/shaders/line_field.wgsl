@@ -1,4 +1,4 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
 struct LFPack {
@@ -8,11 +8,11 @@ struct LFPack {
     layer_count: i32,
 }
 
-@group(2) @binding(0) var<uniform> base_color: vec4<f32>;
-@group(2) @binding(1) var<uniform> edge_color: vec4<f32>;
-@group(2) @binding(2) var<uniform> pack: LFPack;
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> base_color: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(1) var<uniform> edge_color: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(2) var<uniform> pack: LFPack;
 
-#import "shaders/helpers.wgsl"::{PI}
+#import "shaders/helpers.wgsl"::{PI};
 
 @fragment
 fn fragment(

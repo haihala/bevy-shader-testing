@@ -1,7 +1,7 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-#import "shaders/helpers.wgsl"::{PI, rand11, remap, easeOutCirc}
+#import "shaders/helpers.wgsl"::{PI, rand11, remap, easeOutCirc};
 
 const cycle_duration = 3.0;
 const active_duration = 2.0;
@@ -11,7 +11,7 @@ const particle_base_size = 0.1;
 const particle_velocity = 4.0;
 const particle_gravity = 0.5;
 
-@group(2) @binding(0) var<uniform> effect: vec4u;   // Ah web
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> effect: vec4u;   // Ah web
 
 @fragment
 fn fragment(

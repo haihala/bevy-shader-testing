@@ -1,7 +1,7 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-#import "shaders/helpers.wgsl"::{PI, inverse_lerp}
+#import "shaders/helpers.wgsl"::{PI, inverse_lerp};
 
 // Controls
 const zigzags = 3.0;

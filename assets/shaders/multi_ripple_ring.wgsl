@@ -1,15 +1,15 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-@group(2) @binding(0) var<uniform> base_color: vec4<f32>;
-@group(2) @binding(1) var<uniform> edge_color: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> base_color: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(1) var<uniform> edge_color: vec4<f32>;
 
 const duration: f32 = 3.0;
 const ring_thickness: f32 = 0.02;
 const rings: i32 = 3;
 const offset: f32 = 0.08;
 
-#import "shaders/helpers.wgsl"::{PI, easeOutQuint}
+#import "shaders/helpers.wgsl"::{PI, easeOutQuint};
 
 @fragment
 fn fragment(

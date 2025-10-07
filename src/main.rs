@@ -410,7 +410,7 @@ fn button(delta: i32, text: &'static str) -> impl Bundle + use<> {
             align_items: AlignItems::Center,
             ..default()
         },
-        BorderColor(BORDER_COLOR),
+        BorderColor::all(BORDER_COLOR),
         BorderRadius::all(Val::Px(3.0)),
         children![Text::new(text), TextColor(NORMAL_BUTTON)],
     )
@@ -463,7 +463,7 @@ fn button_system(
     }
 }
 fn keyboard_system(
-    mut keyboard_input_events: EventReader<KeyboardInput>,
+    mut keyboard_input_events: MessageReader<KeyboardInput>,
     mut selection: ResMut<Selected>,
     meshes: Query<&Transform, (With<Mesh3d>, Without<Blank>)>,
 ) {

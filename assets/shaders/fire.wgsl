@@ -1,4 +1,4 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::globals;
 
 // This started off with chatGPT. I wanted to see how it would do, and the

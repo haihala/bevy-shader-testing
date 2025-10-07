@@ -1,7 +1,7 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-#import "shaders/helpers.wgsl"::{PI}
+#import "shaders/helpers.wgsl"::{PI};
 const cycle_duration = 2.0;
 const anim_duration = 0.5;
 

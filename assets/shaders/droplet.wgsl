@@ -1,7 +1,7 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-#import "shaders/helpers.wgsl"::{PI, point_in_tri}
+#import "shaders/helpers.wgsl"::{PI, point_in_tri};
 
 // Note to reader:
 // If you are planning on using this on a particle effect or similar, you probably shouldn't

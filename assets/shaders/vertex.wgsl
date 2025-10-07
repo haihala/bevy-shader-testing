@@ -1,8 +1,8 @@
 #import bevy_pbr::forward_io::{VertexOutput, Vertex};
 #import bevy_pbr::mesh_view_bindings::{globals, view};
-#import bevy_pbr::mesh_functions::{get_world_from_local, mesh_position_local_to_clip}
+#import bevy_pbr::mesh_functions::{get_world_from_local, mesh_position_local_to_clip};
 
-#import "shaders/helpers.wgsl"::{PI}
+#import "shaders/helpers.wgsl"::{PI};
 
 const cycle_duration = 3.0;
 const speed = 1.0;

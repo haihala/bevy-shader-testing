@@ -1,9 +1,10 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-@group(2) @binding(0) var<uniform> sharpness: vec4f;
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> sharpness: vec4f;
 
-#import "shaders/helpers.wgsl"::{PI}
+#import "shaders/helpers.wgsl"::{PI};
+
 const offset = PI * 2 / 3;
 
 @fragment

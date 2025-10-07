@@ -1,4 +1,4 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
 #import "shaders/helpers.wgsl"::{PI, easeInQuint};
@@ -8,8 +8,8 @@ const cycle_cooldown = 1.0;
 const total_duration = cycle_duration + cycle_cooldown;
 
 // Z controls relative thickness
-@group(2) @binding(0) var<uniform> control_points: array<vec3f, 16>;
-@group(2) @binding(1) var<uniform> curve_count: vec4u;
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> control_points: array<vec3f, 16>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(1) var<uniform> curve_count: vec4u;
 
 const midline_color = vec4(0.165, 0.133, 0.988, 1.0);
 const stripe_primary_color = vec4(0.892, 0.624, 1.0, 1.0);

@@ -1,5 +1,5 @@
-const PI = 3.14159265359;
-const TAU = PI*2.0;
+const PI: f32 = 3.14159265359;
+const TAU: f32 = PI*2.0;
 
 fn inverse_lerp(floor: f32, ceil: f32, val: f32) -> f32 {
     return (val - floor) / (ceil - floor);

@@ -1,7 +1,8 @@
 use bevy::{
     prelude::*,
     reflect::TypePath,
-    render::render_resource::{AsBindGroup, ShaderRef, ShaderType},
+    render::render_resource::{AsBindGroup, ShaderType},
+    shader::ShaderRef,
 };
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -253,9 +254,9 @@ impl Material for Jackpot {
     }
 
     fn specialize(
-        _pipeline: &bevy::pbr::MaterialPipeline<Self>,
+        _pipeline: &bevy::pbr::MaterialPipeline,
         descriptor: &mut bevy::render::render_resource::RenderPipelineDescriptor,
-        _layout: &bevy::render::mesh::MeshVertexBufferLayoutRef,
+        _layout: &bevy::mesh::MeshVertexBufferLayoutRef,
         _key: bevy::pbr::MaterialPipelineKey<Self>,
     ) -> Result<(), bevy::render::render_resource::SpecializedMeshPipelineError> {
         descriptor.primitive.cull_mode = None;

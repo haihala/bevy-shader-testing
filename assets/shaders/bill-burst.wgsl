@@ -1,7 +1,7 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
-#import "shaders/helpers.wgsl"::{PI, rand11, remap, easeInQuint, point_in_quad, project_to_line}
+#import "shaders/helpers.wgsl"::{PI, rand11, remap, easeInQuint, point_in_quad, project_to_line};
 
 const cycle_duration = 3.0;
 const active_duration = 2.0;

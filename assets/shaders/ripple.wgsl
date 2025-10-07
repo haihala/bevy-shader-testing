@@ -1,8 +1,8 @@
 #import bevy_pbr::forward_io::{Vertex};
 #import bevy_pbr::mesh_view_bindings::{globals, view};
-#import bevy_pbr::mesh_functions::{get_world_from_local, mesh_position_local_to_clip}
+#import bevy_pbr::mesh_functions::{get_world_from_local, mesh_position_local_to_clip};
 
-#import "shaders/helpers.wgsl"::{easeInQuint, easeOutQuint, easeInCirc, PI}
+#import "shaders/helpers.wgsl"::{easeInQuint, easeOutQuint, easeInCirc, PI};
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,

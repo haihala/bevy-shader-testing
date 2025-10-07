@@ -1,4 +1,4 @@
-#import bevy_pbr::forward_io::VertexOutput
+#import bevy_pbr::forward_io::VertexOutput;
 #import bevy_pbr::mesh_view_bindings::{globals, view};
 
 #import "shaders/helpers.wgsl"::{PI, perlinNoise2, easeOutQuint, rand11};
